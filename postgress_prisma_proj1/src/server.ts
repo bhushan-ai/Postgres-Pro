@@ -4,8 +4,7 @@ import morgan from "morgan";
 import { prisma } from "./lib/prisma";
 import express, { type Request, type Response } from "express";
 import postRouter from "./routes/post.routes";
-
-const PORT = process.env.PORT || 4000;
+import userRouter from "./routes/user.routes";
 
 const app = express();
 
@@ -14,15 +13,11 @@ app.use(morgan("tiny"));
 app.use(express.json());
 // Routes
 
-app.use("/api", postRouter);
+app.use("/api/post", postRouter);
+app.use("/api/user", userRouter);
 
 app.get("/", (req: Request, res: Response) => {
   return res.send("API's are working!!");
-});
-
-app.get("/users", async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
 });
 
 export default app;
