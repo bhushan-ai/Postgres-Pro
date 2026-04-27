@@ -7,9 +7,9 @@ services:
     restart: always
 
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: bhushan
-      POSTGRES_DB: basic_social_media
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
 
     ports:
       - "5432:5432"
