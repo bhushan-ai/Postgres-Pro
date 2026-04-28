@@ -73,7 +73,31 @@ export const fetchUsers = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const allUsers = await prisma.user.findMany();
+    // to get specific fields
+    const allUsers = await prisma.user.findMany({
+      include: {
+        posts: {
+          select: {
+            title: true,
+            comment_count: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    // to get counts of posts 
+    // const allUsers = await prisma.user.findMany({
+    //   select: {
+    //     _count: {
+    //       select: {
+    //         posts: true,
+    //         comments: true,
+    //       },
+    //     },
+    //   },
+    // });
+
     res
       .status(200)
       .json({ success: true, message: "Users fetched ", data: allUsers });
