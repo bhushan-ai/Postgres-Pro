@@ -179,6 +179,7 @@ export const deleteComment = async (
         },
       },
     });
+
     const deletedComment = await prisma.comment.delete({
       where: {
         id: String(commentId),
