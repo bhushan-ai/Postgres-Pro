@@ -86,7 +86,7 @@ export const fetchUsers = async (
       },
     });
 
-    // to get counts of posts 
+    // to get counts of posts
     // const allUsers = await prisma.user.findMany({
     //   select: {
     //     _count: {
@@ -118,6 +118,18 @@ export const showUser = async (req: Request, res: Response): Promise<void> => {
     const user = await prisma.user.findFirst({
       where: {
         id: Number(userId),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+          },
+        },
       },
     });
     res

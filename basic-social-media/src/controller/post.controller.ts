@@ -7,7 +7,23 @@ export const fetchPosts = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const allPosts = await prisma.post.findMany();
+    const allPosts = await prisma.post.findMany({
+      include: {
+        comments: {
+          include: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        id: "desc",
+      },
+    });
+
     res
       .status(200)
       .json({ success: true, message: "Users all Posts ", data: allPosts });
@@ -87,6 +103,14 @@ export const showPost = async (req: Request, res: Response): Promise<void> => {
     const post = await prisma.post.findFirst({
       where: {
         id: Number(postId),
+      },
+      include: {
+        comments: {
+          select: {
+            id: true,
+            comment: true,
+          },
+        },
       },
     });
     res
