@@ -4,8 +4,9 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  previewFeatures = ["fullTextSearchPostgres"]
 }
 
 datasource db {
@@ -28,7 +29,7 @@ model Post {
   user_id       Int
   title         String
   description   String
-  comment_count Int    @default(0)
+  comment_count Int       @default(0)
   createdAt     DateTime  @default(now())
   comments      Comment[]
 }
@@ -37,7 +38,7 @@ model Comment {
   id        String   @id @default(uuid())
   post      Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
   post_id   Int
-  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade )
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id   Int
   comment   String
   createdAt DateTime @default(now())

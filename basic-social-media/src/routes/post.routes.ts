@@ -3,6 +3,7 @@ import {
   createPost,
   deletePost,
   fetchPosts,
+  searchPost,
   showPost,
   updatePost,
 } from "../controller/post.controller";
@@ -14,5 +15,6 @@ postRoutes.get("/posts", fetchPosts);
 postRoutes.get("/post/:id", showPost);
 postRoutes.put("/update-post/:id", updatePost);
 postRoutes.delete("/delete-post/:id", deletePost);
+postRoutes.get("/search", searchPost);
 
 export default postRoutes;

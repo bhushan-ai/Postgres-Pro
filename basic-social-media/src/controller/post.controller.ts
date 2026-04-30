@@ -150,3 +150,30 @@ export const deletePost = async (
       .json({ success: false, message: "Server side error", error: err });
   }
 };
+
+// search post
+export const searchPost = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const query = req.query.q as string;
+    const post = await prisma.post.findMany({
+      where: {
+        description: {
+          search: query,
+        },
+      },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "post deleted ", data: post });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`something went wrong while searching post the post`, err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
