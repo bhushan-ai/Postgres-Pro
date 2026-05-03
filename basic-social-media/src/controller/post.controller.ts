@@ -7,7 +7,21 @@ export const fetchPosts = async (
   res: Response,
 ): Promise<void> => {
   try {
+    // pagination
+    let page: number = Number(req.query.page) || 1;
+    let limit: number = Number(req.query.limit) || 10;
+
+    if (page <= 0) {
+      page = 1;
+    }
+
+    if (limit <= 0 || limit > 100) {
+      limit = 10;
+    }
+    const skip = (page - 1) * limit;
     const allPosts = await prisma.post.findMany({
+      skip: skip,
+      take: limit,
       include: {
         comments: {
           include: {
@@ -24,9 +38,20 @@ export const fetchPosts = async (
       },
     });
 
-    res
-      .status(200)
-      .json({ success: true, message: "Users all Posts ", data: allPosts });
+    // to get total post count
+    const totalPostCount = await prisma.post.count();
+    const totalPages = Math.ceil(totalPostCount / limit);
+
+    res.status(200).json({
+      success: true,
+      message: "Users all Posts ",
+      data: allPosts,
+      meta: {
+        totalPages,
+        currentPage: page,
+        limit: limit,
+      },
+    });
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`something went wrong while getting the posts`, err);
