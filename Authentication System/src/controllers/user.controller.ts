@@ -15,6 +15,7 @@ export const registerUser = async (
         .json({ success: false, message: "all fields are required" });
       return;
     }
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -83,6 +84,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       message: "User login Successfully",
       accessToken: accessToken,
       refreshToken: refreshToken,
+      data: user,
     });
   } catch (error: unknown) {
     const err = error as Error;
