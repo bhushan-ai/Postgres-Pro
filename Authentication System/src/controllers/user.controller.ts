@@ -1,8 +1,10 @@
+import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
+//registered
 export const registerUser = async (
   req: Request,
   res: Response,
@@ -43,6 +45,7 @@ export const registerUser = async (
   }
 };
 
+//login
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -89,6 +92,64 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while login the user`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
+//refresh
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  const { refreshToken } = req.body;
+  try {
+    if (!refreshToken) {
+      res
+        .status(401)
+        .json({ success: false, message: "Refresh token not found" });
+    }
+
+    try {
+      const payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET!);
+    } catch (error) {
+      res.status(403).json({ success: false, message: "Invalid Token" });
+    }
+
+    const session = await prisma.session.findUnique({
+      where: { refreshToken },
+    });
+
+    if (!session || session.expiresAt < new Date()) {
+      res.status(403).json({ success: false, message: "session expired" });
+    }
+
+    const accessToken = generateAccessToken(session?.userId as number);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Refreshed", accessToken: accessToken });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while refreshing`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
+// logout
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+    await prisma.session.delete({
+      where: { refreshToken },
+    });
+
+    res.status(200).json({ success: true, message: "logged Out successfully" });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while logging out`, err);
 
     res
       .status(500)
