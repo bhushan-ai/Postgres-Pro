@@ -21,7 +21,7 @@ model User {
   addresses Address[]
   reviews   Review[]
   carts     Cart[]
-  orders    Orders[]
+  orders    Order[]
 }
 
 model Address {
@@ -44,11 +44,13 @@ model Product {
   category    Category    @relation(fields: [categoryId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  carts       Cart[]
-  orders      Orders[]
   cartItems   CartItem[]
   orderItems  OrderItem[]
   reviews     Review[]
+
+  @@index([price])
+  @@index([categoryId])
+  @@index([name])
 }
 
 model Category {
@@ -67,17 +69,18 @@ model Review {
   rating    Int
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
-  products  Product? @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Cart {
   id     String @id @default(uuid())
-  userId String
+  userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
-  products   Product?   @relation(fields: [productsId], references: [id])
-  productsId String?
-  items      CartItem[]
+  items CartItem[]
 }
 
 model CartItem {
@@ -86,20 +89,24 @@ model CartItem {
   productId String
   quantity  Int
 
-  cart    Cart    @relation(fields: [cartId], references: [id])
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
+
+  @@index([cartId])
+  @@index([productId])
 }
 
-model Orders {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  total     Float
+model Order {
+  id     String      @id @default(uuid())
+  userId String
+  total  Float
+  status OrderStatus @default(PENDING)
+
   createdAt DateTime @default(now())
 
-  items      OrderItem[]
-  products   Product?    @relation(fields: [productsId], references: [id])
-  productsId String?
+  items    OrderItem[]
+  user     User        @relation(fields: [userId], references: [id])
+  payments Payment?
 }
 
 model OrderItem {
@@ -107,8 +114,46 @@ model OrderItem {
   orderId   String
   productId String
   quantity  Int
-  price     Int
+  price     Float
 
-  order   Orders  @relation(fields: [orderId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id      String @id @default(uuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  amount        Float
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod
+  transactionId String?       @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  NETBANKING
+  UPI
+  COD
 }
