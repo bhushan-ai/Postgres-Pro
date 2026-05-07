@@ -17,7 +17,6 @@ model User {
   name      String
   email     String    @unique
   password  String
-  address   String
   addresses Address[]
   reviews   Review[]
   carts     Cart[]
@@ -25,11 +24,18 @@ model User {
 }
 
 model Address {
-  id             String @id @default(uuid())
-  billingAddress String
-  pinCode        String
-  userId         String
-  user           User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String  @id @default(uuid())
+  fullName    String
+  phone       String
+  addressLine String
+  city        String
+  state       String
+  country     String
+  pinCode     String
+  isDefault   Boolean @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Product {
