@@ -104,7 +104,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 //refresh
-
 export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
     const { refreshToken } = req.body;
@@ -139,6 +138,20 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while refreshing`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+export const updateUser = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while updating`, err);
 
     res
       .status(500)
