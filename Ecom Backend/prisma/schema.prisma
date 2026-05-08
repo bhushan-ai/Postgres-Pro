@@ -16,11 +16,21 @@ model User {
   id        String    @id @default(uuid())
   name      String
   email     String    @unique
-  password  String
+  password  String?
   addresses Address[]
   reviews   Review[]
   carts     Cart[]
   orders    Order[]
+  session   Session[]
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  userId       String   @unique
+  refreshToken String   @unique
+  expiresAt    DateTime
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Address {
