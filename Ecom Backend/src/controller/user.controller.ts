@@ -68,23 +68,36 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     if (!user) {
       res.status(409).json({ success: false, message: "Email is Invalid" });
+      return;
     }
     const checkPass = await bcrypt.compare(password, user?.password as string);
 
     if (!checkPass) {
       res.status(401).json({ success: false, message: "password incorrect" });
+      return;
     }
 
     const accessToken = generateAccessToken(user?.id as string);
     const refreshToken = generateRefreshToken(user?.id as string);
 
-    await prisma.session.create({
-      data: {
-        userId: user?.id as string,
+    const alreadyLoggedIn = await prisma.session.findUnique({
+      where: {
         refreshToken: refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
+
+    if (alreadyLoggedIn) {
+      res.status(401).json({ success: false, message: "already loggedIn" });
+      return;
+    } else {
+      await prisma.session.create({
+        data: {
+          userId: user?.id as string,
+          refreshToken: refreshToken,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+    }
 
     res.status(200).json({
       succuss: true,
@@ -144,6 +157,8 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
       .json({ success: false, message: "Server side error", error: err });
   }
 };
+
+//update
 export const updateUser = async (
   req: Request,
   res: Response,
@@ -152,6 +167,26 @@ export const updateUser = async (
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while updating`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
+//logout
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const refreshToken = req.params.id;
+
+    await prisma.session.delete({
+      where: { refreshToken: refreshToken as string },
+    });
+
+    res.status(200).json({ success: true, message: "logged Out successfully" });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while logging out`, err);
 
     res
       .status(500)
