@@ -9,7 +9,7 @@ export const createUser = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const { name, email, password, address } = req.body;
+  const { name, email, password, address,role } = req.body;
   try {
     if (!name || !email || !password || !address) {
       res.status(400).json({
@@ -36,6 +36,7 @@ export const createUser = async (
         name,
         email,
         password: hashedPassword,
+        role
       },
     });
 

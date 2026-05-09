@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma";
 //add image
 export const addImage = async (req: Request, res: Response): Promise<void> => {
   try {
+    //console.log(req.file)
     if (!req.file) {
       res.status(404).json({ success: false, message: "Image not found" });
       return;
@@ -15,6 +16,7 @@ export const addImage = async (req: Request, res: Response): Promise<void> => {
     const url = `data:${bufferFile.mimetype};base64,${b64}`;
     const imgUrl = await uploadImageToCloudinary(url);
 
+    //console.log(imgUrl)
     if (imgUrl === null) {
       res.status(404).json({
         success: false,
@@ -38,6 +40,7 @@ export const addImage = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+//add product
 export const addProduct = async (
   req: Request,
   res: Response,
@@ -79,7 +82,7 @@ export const addProduct = async (
     const { name, description, image, price, stock, discount, categoryId } =
       req.body;
 
-    if (!name || !description || !image || !price || !stock || !discount) {
+    if (!name || !description || !image || !price || !stock) {
       res.status(400).json({
         success: false,
         message: "All info required",
@@ -95,15 +98,52 @@ export const addProduct = async (
         price,
         stock,
         discount,
-        categoryId: categoryId,
+        categoryId,
       },
     });
+
     res
       .status(201)
       .json({ success: true, message: "Product added", data: newProduct });
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while adding the product`, err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
+//add categories
+export const addCategories = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { name, slug, description } = req.body;
+    if (!name || !slug || !description) {
+      res.status(400).json({
+        success: false,
+        message: "All info required",
+      });
+      return;
+    }
+
+    const newCategory = await prisma.category.create({
+      data: {
+        name: name,
+        slug: slug,
+        description: description,
+      },
+    });
+
+    res
+      .status(201)
+      .json({ success: true, message: "Category Created", data: newCategory });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while creating category`, err);
+
     res
       .status(500)
       .json({ success: false, message: "Server side error", error: err });
