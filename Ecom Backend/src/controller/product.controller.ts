@@ -171,9 +171,9 @@ export const deleteProduct = async (
       },
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "Category Created",
+      message: "Product deleted",
       data: deletedProduct,
     });
   } catch (error: unknown) {
@@ -185,4 +185,3 @@ export const deleteProduct = async (
       .json({ success: false, message: "Server side error", error: err });
   }
 };
-
