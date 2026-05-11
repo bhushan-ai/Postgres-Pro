@@ -114,12 +114,127 @@ export const addProduct = async (
   }
 };
 
+//update product
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // check user is admin or not
+    if (!req.user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    //check user id
+    const userId = req.user.id;
+    if (!userId) {
+      res.status(404).json({ success: false, message: "User Id not found" });
+    }
+
+    //find user
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, message: "User not found in Db" });
+      return;
+    }
+
+    if (user?.role !== "ADMIN") {
+      res.status(403).json({
+        success: false,
+        message: "You can not add the product because you are not admin",
+      });
+      return;
+    }
+
+    const { productId } = req.params;
+
+    const existingProduct = await prisma.product.findUnique({
+      where: {
+        id: productId as string,
+      },
+    });
+
+    if (!existingProduct) {
+      res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+      return;
+    }
+
+    const { name, description, image, price, stock, discount } = req.body;
+
+    const product = await prisma.product.update({
+      where: {
+        id: productId as string,
+      },
+      data: {
+        ...(name && { name }),
+        ...(description && { description }),
+        ...(image && { image }),
+        ...(price && { stock }),
+        ...(stock && { stock }),
+        ...(discount && { discount }),
+      },
+    });
+    res
+      .status(201)
+      .json({ success: true, message: "product updated", data: product });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while updating product`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
 //add categories
 export const addCategories = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
+    // check user is admin or not
+    if (!req.user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    //check user id
+    const userId = req.user.id;
+    if (!userId) {
+      res.status(404).json({ success: false, message: "User Id not found" });
+    }
+
+    //find user
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, message: "User not found in Db" });
+      return;
+    }
+
+    if (user?.role !== "ADMIN") {
+      res.status(404).json({
+        success: false,
+        message: "You can not add the product because you are not admin",
+      });
+      return;
+    }
+
+    //adding category
     const { name, slug, description } = req.body;
     if (!name || !slug || !description) {
       res.status(400).json({
@@ -156,6 +271,39 @@ export const deleteProduct = async (
   res: Response,
 ): Promise<void> => {
   try {
+    // check user is admin or not
+    if (!req.user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    //check user id
+    const userId = req.user.id;
+    if (!userId) {
+      res.status(404).json({ success: false, message: "User Id not found" });
+    }
+
+    //find user
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, message: "User not found in Db" });
+      return;
+    }
+
+    if (user?.role !== "ADMIN") {
+      res.status(404).json({
+        success: false,
+        message: "You can not add the product because you are not admin",
+      });
+      return;
+    }
+
+    //deleting product
     const productId = req.params.id;
     if (!productId) {
       res.status(400).json({

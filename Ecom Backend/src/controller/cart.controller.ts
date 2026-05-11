@@ -106,3 +106,4 @@ export const addToCart = async (req: Request, res: Response): Promise<void> => {
       .json({ success: false, message: "Server side error", error: err });
   }
 };
+
