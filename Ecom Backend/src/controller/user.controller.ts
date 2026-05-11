@@ -9,7 +9,7 @@ export const createUser = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const { name, email, password, address,role } = req.body;
+  const { name, email, password, address, role } = req.body;
   try {
     if (!name || !email || !password || !address) {
       res.status(400).json({
@@ -36,7 +36,7 @@ export const createUser = async (
         name,
         email,
         password: hashedPassword,
-        role
+        role,
       },
     });
 
@@ -165,9 +165,33 @@ export const updateUser = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const { name, email, password, address } = req.body;
+
+    if (!req.user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    const userId = req.user?.id;
+
+    const user = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(password && { password }),
+        ...(address && { name }),
+      },
+    });
+
+    res
+      .status(201)
+      .json({ success: true, message: "user updated", data: user });
   } catch (error: unknown) {
     const err = error as Error;
-    console.log(`Something went wrong while updating`, err);
+    console.log(`Something went wrong while updating user`, err);
 
     res
       .status(500)

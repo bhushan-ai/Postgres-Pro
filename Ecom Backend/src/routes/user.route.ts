@@ -4,6 +4,7 @@ import {
   login,
   logout,
   refresh,
+  updateUser,
 } from "../controller/user.controller";
 import { jwtMiddleware } from "../middleware/jwtAuth";
 
@@ -13,6 +14,8 @@ userRouter.post("/register", createUser);
 userRouter.post("/login", login);
 userRouter.post("/refresh", refresh);
 userRouter.delete("/logout/:id", logout);
+
+userRouter.put("/update-user/:id", jwtMiddleware, updateUser);
 
 userRouter.get(
   "/protected",
