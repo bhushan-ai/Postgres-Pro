@@ -149,3 +149,40 @@ export const addCategories = async (
       .json({ success: false, message: "Server side error", error: err });
   }
 };
+
+// delete product
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const productId = req.params.id;
+    if (!productId) {
+      res.status(400).json({
+        success: false,
+        message: "productId required",
+      });
+      return;
+    }
+
+    const deletedProduct = await prisma.product.delete({
+      where: {
+        id: productId as string,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Category Created",
+      data: deletedProduct,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while deleting product`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
