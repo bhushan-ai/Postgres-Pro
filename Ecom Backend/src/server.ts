@@ -3,6 +3,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import userRouter from "./routes/user.route";
 import productRouter from "./routes/product.route";
+import cartRouter from "./routes/cart.route";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cors());
 // Routes
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
+app.use("/api/cart", cartRouter);
 
 app.get("/", (req: Request, res: Response) => {
   return res.send("API's are working!!");

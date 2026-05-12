@@ -18,7 +18,7 @@ productRouter.get("/all-products", getAllProducts);
 productRouter.post("/add-img", jwtMiddleware, upload.single("image"), addImage);
 productRouter.post("/add-product", jwtMiddleware, addProduct);
 productRouter.delete("/delete-product/:id", jwtMiddleware, deleteProduct);
-productRouter.put("/update-product/:id", jwtMiddleware, updateProduct);
+productRouter.put("/update-product/:productId", jwtMiddleware, updateProduct);
 productRouter.post("/add-category", jwtMiddleware, addCategories);
 
 export default productRouter;

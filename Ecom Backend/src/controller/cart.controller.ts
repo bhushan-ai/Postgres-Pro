@@ -1,6 +1,51 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 
+//get cart items
+export const getCartItems = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const items = await prisma.cartItem.findMany({
+      include: {
+        product: {
+          select: {
+            name: true,
+            image: true,
+            price: true,
+            discount: true,
+          },
+        },
+      },
+    });
+
+    //to get total price of items
+    const totalPrice = items.reduce((total, item) => {
+      const price = item.product.price;
+      const discount = item.product.discount || 0;
+
+      const discountedPrice = price - (price * discount) / 100;
+      return total + discountedPrice * item.quantity;
+    }, 0);
+
+    res.status(200).json({
+      success: true,
+      totalPrice: totalPrice,
+      message: "Cart Items Fetched",
+      data: items,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching the item from cart`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
+//item added to cart
 export const addToCart = async (req: Request, res: Response): Promise<void> => {
   const productId = req.params.id;
   const { quantity } = req.body;
@@ -106,4 +151,3 @@ export const addToCart = async (req: Request, res: Response): Promise<void> => {
       .json({ success: false, message: "Server side error", error: err });
   }
 };
-
