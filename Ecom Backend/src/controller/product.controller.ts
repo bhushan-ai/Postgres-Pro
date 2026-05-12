@@ -40,6 +40,34 @@ export const addImage = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+//get all products
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const allProducts = await prisma.product.findMany();
+    if (allProducts.length < 1) {
+      res.status(404).json({ success: false, message: "Products not found" });
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      message: "All Products Fetched",
+      products: allProducts.length,
+      data: allProducts,
+    });
+    return;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching products`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
 //add product
 export const addProduct = async (
   req: Request,

@@ -4,12 +4,16 @@ import {
   addImage,
   addProduct,
   deleteProduct,
+  getAllProducts,
   updateProduct,
 } from "../controller/product.controller";
 import { jwtMiddleware } from "../middleware/jwtAuth";
 import { upload } from "../services/cloudinary";
 
 const productRouter = express.Router();
+
+//public routes
+productRouter.get("/all-products", getAllProducts);
 
 productRouter.post("/add-img", jwtMiddleware, upload.single("image"), addImage);
 productRouter.post("/add-product", jwtMiddleware, addProduct);
