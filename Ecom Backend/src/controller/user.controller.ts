@@ -4,6 +4,29 @@ import { prisma } from "../lib/prisma";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
+//get all users
+export const allUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        name: true,
+        email: true,
+      },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Users fetched", data: users });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching the users`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
 //create
 export const createUser = async (
   req: Request,

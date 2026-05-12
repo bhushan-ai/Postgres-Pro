@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import {
+  allUsers,
   createUser,
   login,
   logout,
@@ -14,6 +15,7 @@ userRouter.post("/register", createUser);
 userRouter.post("/login", login);
 userRouter.post("/refresh", refresh);
 userRouter.delete("/logout/:id", logout);
+userRouter.get("/all-users", allUsers);
 
 userRouter.put("/update-user/:id", jwtMiddleware, updateUser);
 
