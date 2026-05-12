@@ -15,6 +15,7 @@ const productRouter = express.Router();
 //public routes
 productRouter.get("/all-products", getAllProducts);
 
+//private routes
 productRouter.post("/add-img", jwtMiddleware, upload.single("image"), addImage);
 productRouter.post("/add-product", jwtMiddleware, addProduct);
 productRouter.delete("/delete-product/:id", jwtMiddleware, deleteProduct);
