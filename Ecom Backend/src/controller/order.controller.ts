@@ -3,7 +3,6 @@ import { prisma } from "../lib/prisma";
 
 export const order = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { cartId, quantity } = req.body;
     const userId = req.user.id;
 
     // getting the cart
@@ -21,6 +20,7 @@ export const order = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    //get the cart items
     const getCartItems = await prisma.cartItem.findMany({
       where: {
         cartId: getCart.id,
@@ -35,18 +35,19 @@ export const order = async (req: Request, res: Response): Promise<void> => {
       if (item.quantity > item.product.stock) {
         res.status(400).json({
           success: false,
-          message: `${item.product} is out of stock`,
+          message: `${item.product.name} is out of stock`,
         });
         return;
       }
     }
 
+    //Calculate Total
     const totalPrice = getCartItems.reduce((total, item) => {
-      const price = item.product.price;
-      const discount = item.product.discount;
+      const price = item.product.price; //200
+      const discount = item.product.discount; //20
 
-      const discountedPrice = price - (price * discount) / 1000;
-      return total + discountedPrice * item.quantity;
+      const discountedPrice = price - (price * discount) / 100; // 200 * 20 = 2000 /100 = 200 -20 = 180
+      return total + discountedPrice * item.quantity; // 0 + 180 *  2 =  360
     }, 0);
 
     //creating order
@@ -56,16 +57,46 @@ export const order = async (req: Request, res: Response): Promise<void> => {
         userId: userId,
       },
     });
-    
-    //creating order items
 
+    // transaction database safety wrapper
+    await prisma.$transaction(async (tx) => {
+      //creating order items
+      const orderItem = await tx.orderItem.createMany({
+        data: getCartItems.map((item) => ({
+          orderId: createOrder.id as string,
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.product.price,
+        })),
+      });
 
-  
-    //   res
-    //     .status(400)
-    //     .json({ success: false, message: "order can not be placed" });
-    //   return;
-    // }
+      //stock reduction
+      for (const item of getCartItems) {
+        await tx.product.update({
+          where: {
+            id: item.product.id,
+          },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+      }
+
+      //delete cart items
+      await tx.cartItem.deleteMany({
+        where: {
+          cartId: getCart.id,
+        },
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "order placed",
+        orderId: createOrder.id,
+      });
+    });
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while adding the address`, err);
@@ -75,5 +106,3 @@ export const order = async (req: Request, res: Response): Promise<void> => {
       .json({ success: false, message: "Server side error", error: err });
   }
 };
-
-//
