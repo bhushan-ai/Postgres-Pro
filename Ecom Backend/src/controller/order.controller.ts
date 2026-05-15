@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 
-//get orders
+//get user orders
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user.id;

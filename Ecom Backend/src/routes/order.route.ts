@@ -4,7 +4,7 @@ import { jwtMiddleware } from "../middleware/jwtAuth";
 import { addCustomerAddress, getOrderById, getOrders, order, orderStatusUpdateByAdmin } from "../controller/order.controller";
 
 const orderRouter = express.Router();
-
+// yet to check
 orderRouter.post("/place-order", jwtMiddleware, order);
 orderRouter.get("/user-orders", jwtMiddleware, getOrders);
 orderRouter.get("/get-order/:id", jwtMiddleware, getOrderById);
