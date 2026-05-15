@@ -4,7 +4,6 @@ import cors from "cors";
 import userRouter from "./routes/user.route";
 import productRouter from "./routes/product.route";
 import cartRouter from "./routes/cart.route";
-import addressRouter from "./routes/address.route";
 import reviewRouter from "./routes/rating.route";
 import orderRouter from "./routes/order.route";
 
@@ -19,7 +18,6 @@ app.use(cors());
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
-app.use("/api/address", addressRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/order", orderRouter);
 
