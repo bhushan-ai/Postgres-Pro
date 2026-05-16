@@ -32,7 +32,7 @@ enum Role {
 
 model Session {
   id           Int      @id @default(autoincrement())
-  userId       String  
+  userId       String
   refreshToken String   @unique
   expiresAt    DateTime
 
@@ -145,16 +145,16 @@ model OrderItem {
 }
 
 model Payment {
-  id      String @id @default(uuid())
-  orderId String @unique
-  order   Order  @relation(fields: [orderId], references: [id])
-
-  amount        Float
-  paymentStatus PaymentStatus @default(PENDING)
-  paymentMethod PaymentMethod
-  transactionId String?       @unique
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String        @id @default(uuid())
+  orderId         String        @unique
+  order           Order         @relation(fields: [orderId], references: [id])
+  razorpayOrderId String?
+  amount          Float
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod
+  transactionId   String?       @unique
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 enum OrderStatus {
@@ -173,8 +173,6 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
-  CARD
-  NETBANKING
-  UPI
+  Razorpay
   COD
 }
