@@ -68,6 +68,58 @@ export const getAllProducts = async (
   }
 };
 
+//get all categories
+export const getAllCategories = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // check user is admin or not
+    if (!req.user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    //check user id
+    const userId = req.user.id;
+    if (!userId) {
+      res.status(404).json({ success: false, message: "User Id not found" });
+    }
+
+    //find user
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ success: false, message: "User not found in Db" });
+      return;
+    }
+
+    if (user?.role !== "ADMIN") {
+      res.status(404).json({
+        success: false,
+        message: "You are not an admin",
+      });
+      return;
+    }
+
+    const categories = await prisma.category.findMany({});
+
+    res
+      .status(201)
+      .json({ success: true, message: "Product categories fetched", data: categories });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching the product categories`, err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
 //add product
 export const addProduct = async (
   req: Request,

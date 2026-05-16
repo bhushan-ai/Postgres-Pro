@@ -6,6 +6,7 @@ import productRouter from "./routes/product.route";
 import cartRouter from "./routes/cart.route";
 import reviewRouter from "./routes/rating.route";
 import orderRouter from "./routes/order.route";
+import adminRouter from "./routes/admin.route";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/admin", adminRouter);
 
 app.get("/", (req: Request, res: Response) => {
   return res.send("API's are working!!");

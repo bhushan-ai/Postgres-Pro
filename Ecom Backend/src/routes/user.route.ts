@@ -14,7 +14,7 @@ const userRouter = express.Router();
 userRouter.post("/register", createUser);
 userRouter.post("/login", login);
 userRouter.post("/refresh", refresh);
-userRouter.delete("/logout/:id", logout);
+userRouter.delete("/logout", jwtMiddleware, logout);
 userRouter.get("/all-users", allUsers);
 
 userRouter.put("/update-user/:id", jwtMiddleware, updateUser);

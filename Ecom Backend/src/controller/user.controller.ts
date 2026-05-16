@@ -225,11 +225,24 @@ export const updateUser = async (
 //logout
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
-    const refreshToken = req.params.id;
+    if (!req.user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
 
-    await prisma.session.delete({
-      where: { refreshToken: refreshToken as string },
+    const userId = req.user?.id;
+
+    await prisma.session.deleteMany({
+      where: {
+        userId: userId as string,
+      },
     });
+
+    // const refreshToken = req.params.id;
+
+    // await prisma.session.delete({
+    //   where: { refreshToken: refreshToken as string },
+    // });
 
     res.status(200).json({ success: true, message: "logged Out successfully" });
   } catch (error: unknown) {

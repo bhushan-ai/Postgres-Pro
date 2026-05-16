@@ -4,6 +4,7 @@ import {
   addImage,
   addProduct,
   deleteProduct,
+  getAllCategories,
   getAllProducts,
   updateProduct,
 } from "../controller/product.controller";
@@ -21,5 +22,6 @@ productRouter.post("/add-product", jwtMiddleware, addProduct);
 productRouter.delete("/delete-product/:id", jwtMiddleware, deleteProduct);
 productRouter.put("/update-product/:productId", jwtMiddleware, updateProduct);
 productRouter.post("/add-category", jwtMiddleware, addCategories);
+productRouter.get("/categories", jwtMiddleware, getAllCategories);
 
 export default productRouter;
