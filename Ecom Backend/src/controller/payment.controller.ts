@@ -28,6 +28,16 @@ export const createPaymentOrder = async (
       receipt: order?.id,
     });
 
+    //update order id
+    await prisma.payment.update({
+      where: {
+        orderId: orderId as string,
+      },
+      data: {
+        razorpayOrderId: razorpayOrder.id,
+      },
+    });
+
     res.status(201).json({
       success: true,
       message: "razorpay order id created",

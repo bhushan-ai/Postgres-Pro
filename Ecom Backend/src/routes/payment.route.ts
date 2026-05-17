@@ -8,7 +8,11 @@ import {
 
 const paymentRouter = express.Router();
 
-paymentRouter.post("/create-payment-order", jwtMiddleware, createPaymentOrder);
+paymentRouter.post(
+  "/create-payment-order/:id",
+  jwtMiddleware,
+  createPaymentOrder,
+);
 paymentRouter.post("/verify-payment", jwtMiddleware, verifyPayment);
 
 export default paymentRouter;
