@@ -6,6 +6,7 @@ import {
   deleteProduct,
   getAllCategories,
   getAllProducts,
+  searchProducts,
   updateProduct,
 } from "../controller/product.controller";
 import { jwtMiddleware } from "../middleware/jwtAuth";
@@ -21,6 +22,9 @@ productRouter.post("/add-img", jwtMiddleware, upload.single("image"), addImage);
 productRouter.post("/add-product", jwtMiddleware, addProduct);
 productRouter.delete("/delete-product/:id", jwtMiddleware, deleteProduct);
 productRouter.put("/update-product/:productId", jwtMiddleware, updateProduct);
+productRouter.get("/search", jwtMiddleware, searchProducts);
+
+//categories
 productRouter.post("/add-category", jwtMiddleware, addCategories);
 productRouter.get("/categories", jwtMiddleware, getAllCategories);
 
