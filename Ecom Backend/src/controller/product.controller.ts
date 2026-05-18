@@ -2,6 +2,42 @@ import { Request, Response } from "express";
 import { uploadImageToCloudinary } from "../services/cloudinary";
 import { prisma } from "../lib/prisma";
 
+//search products
+export const searchProducts = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const query = req.body.q as string;
+    const product = await prisma.product.findMany({
+      where: {
+        name: {
+          search: query,
+        },
+      },
+    });
+
+    //console.log(req.file)
+    if (!product) {
+      res.status(404).json({ success: false, message: "product not found" });
+      return;
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "product fetched",
+      data: product,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching the product`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
 //add image
 export const addImage = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -108,12 +144,17 @@ export const getAllCategories = async (
 
     const categories = await prisma.category.findMany({});
 
-    res
-      .status(201)
-      .json({ success: true, message: "Product categories fetched", data: categories });
+    res.status(201).json({
+      success: true,
+      message: "Product categories fetched",
+      data: categories,
+    });
   } catch (error: unknown) {
     const err = error as Error;
-    console.log(`Something went wrong while fetching the product categories`, err);
+    console.log(
+      `Something went wrong while fetching the product categories`,
+      err,
+    );
     res
       .status(500)
       .json({ success: false, message: "Server side error", error: err });
