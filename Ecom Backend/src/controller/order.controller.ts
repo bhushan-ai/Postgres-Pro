@@ -236,7 +236,7 @@ export const order = async (req: Request, res: Response): Promise<void> => {
         from: process.env.EMAIL_USER!,
         to: userForSendingEmail?.email,
         subject: ` Order Placed `,
-        html: "Your order is successfully placed wait for confirmation",
+        html: `<p>Your order is successfully placed wait for confirmation </p>`,
       });
 
       res.status(201).json({

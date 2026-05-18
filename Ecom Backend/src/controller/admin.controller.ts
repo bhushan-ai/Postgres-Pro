@@ -101,7 +101,7 @@ export const orderStatusUpdateByAdmin = async (
       from: process.env.EMAIL_USER!,
       to: user?.email,
       subject: ` Order Confirmed`,
-      html: "<p>Your <h3>order is successfully Confirmed </h3> wait for payment configuration</p> ",
+      html: `<p>Your <b>order is successfully Confirmed </b> wait for payment configuration</p> `,
     });
 
     res
