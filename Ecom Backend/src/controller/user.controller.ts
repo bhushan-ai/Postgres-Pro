@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
+import { transporter } from "../services/mail";
+import { welcomeEmail } from "../services/textOfMail";
 
 //get all users
 export const allUsers = async (req: Request, res: Response): Promise<void> => {
@@ -61,6 +63,13 @@ export const createUser = async (
         password: hashedPassword,
         role,
       },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER!,
+      to: newUser.email,
+      subject: `Welcome to FitCheck ${newUser.name}`,
+      html: welcomeEmail,
     });
 
     res

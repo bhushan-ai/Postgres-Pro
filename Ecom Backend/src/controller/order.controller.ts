@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { razorpay } from "../lib/razorpay";
 import crypto from "crypto";
+import { transporter } from "../services/mail";
 
 //get user orders
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
@@ -223,6 +224,19 @@ export const order = async (req: Request, res: Response): Promise<void> => {
           amount: totalPrice,
           paymentMethod: "Razorpay",
         },
+      });
+
+      const userForSendingEmail = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER!,
+        to: userForSendingEmail?.email,
+        subject: ` Order Placed `,
+        html: "Your order is successfully placed wait for confirmation",
       });
 
       res.status(201).json({
