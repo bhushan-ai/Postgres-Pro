@@ -1,10 +1,10 @@
 import express from "express";
 
-import { jwtMiddleware } from "../middleware/jwtAuth";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
 import {
   createPaymentOrder,
   verifyPayment,
-} from "../controller/payment.controller";
+} from "../controller/payment.controller.js";
 
 const paymentRouter = express.Router();
 

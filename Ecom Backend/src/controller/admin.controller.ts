@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma";
-import { transporter } from "../services/mail";
+import { prisma } from "../lib/prisma.js";
+import { transporter } from "../services/mail.js";
 
 //get orders  of all users
 export const getOrderOfUsers = async (

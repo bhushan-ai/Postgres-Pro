@@ -8,9 +8,9 @@ import {
   getAllProducts,
   searchProducts,
   updateProduct,
-} from "../controller/product.controller";
-import { jwtMiddleware } from "../middleware/jwtAuth";
-import { upload } from "../services/cloudinary";
+} from "../controller/product.controller.js";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
+import { upload } from "../services/cloudinary.js";
 
 const productRouter = express.Router();
 

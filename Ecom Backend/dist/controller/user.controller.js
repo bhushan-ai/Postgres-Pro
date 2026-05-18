@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
-import { transporter } from "../services/mail";
-import { welcomeEmail } from "../services/textOfMail";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import { transporter } from "../services/mail.js";
+import { welcomeEmail } from "../services/textOfMail.js";
 //get all users
 export const allUsers = async (req, res) => {
     try {

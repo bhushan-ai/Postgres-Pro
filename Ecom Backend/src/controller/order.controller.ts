@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma";
-import { razorpay } from "../lib/razorpay";
+import { prisma } from "../lib/prisma.js";
+import { razorpay } from "../lib/razorpay.js";
 import crypto from "crypto";
-import { transporter } from "../services/mail";
+import { transporter } from "../services/mail.js";
 
 //get user orders
 export const getOrders = async (req: Request, res: Response): Promise<void> => {

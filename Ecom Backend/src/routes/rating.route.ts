@@ -1,11 +1,11 @@
 import express from "express";
 
-import { jwtMiddleware } from "../middleware/jwtAuth";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
 import {
   addCustomerReview,
   allReviewsCustomer,
   deleteCustomerReview,
-} from "../controller/rating.controller";
+} from "../controller/rating.controller.js";
 
 const reviewRouter = express.Router();
 

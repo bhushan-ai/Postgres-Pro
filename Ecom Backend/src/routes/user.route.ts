@@ -6,8 +6,8 @@ import {
   logout,
   refresh,
   updateUser,
-} from "../controller/user.controller";
-import { jwtMiddleware } from "../middleware/jwtAuth";
+} from "../controller/user.controller.js";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
 
 const userRouter = express.Router();
 

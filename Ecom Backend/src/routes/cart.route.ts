@@ -1,7 +1,7 @@
 import express from "express";
 
-import { jwtMiddleware } from "../middleware/jwtAuth";
-import { addToCart, getCartItems } from "../controller/cart.controller";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
+import { addToCart, getCartItems } from "../controller/cart.controller.js";
 
 const cartRouter = express.Router();
 

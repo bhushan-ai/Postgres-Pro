@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 const accessSecret = process.env.ACCESS_SECRET as string;
 
 export const jwtMiddleware = async (

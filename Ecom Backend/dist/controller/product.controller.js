@@ -1,5 +1,5 @@
-import { uploadImageToCloudinary } from "../services/cloudinary";
-import { prisma } from "../lib/prisma";
+import { uploadImageToCloudinary } from "../services/cloudinary.js";
+import { prisma } from "../lib/prisma.js";
 //search products
 export const searchProducts = async (req, res) => {
     try {

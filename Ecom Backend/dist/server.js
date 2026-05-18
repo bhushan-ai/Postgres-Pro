@@ -1,13 +1,13 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import userRouter from "./routes/user.route";
-import productRouter from "./routes/product.route";
-import cartRouter from "./routes/cart.route";
-import reviewRouter from "./routes/rating.route";
-import orderRouter from "./routes/order.route";
-import adminRouter from "./routes/admin.route";
-import paymentRouter from "./routes/payment.route";
+import userRouter from "./routes/user.route.js";
+import productRouter from "./routes/product.route.js";
+import cartRouter from "./routes/cart.route.js";
+import reviewRouter from "./routes/rating.route.js";
+import orderRouter from "./routes/order.route.js";
+import adminRouter from "./routes/admin.route.js";
+import paymentRouter from "./routes/payment.route.js";
 const app = express();
 //middleware
 app.use(express.json());

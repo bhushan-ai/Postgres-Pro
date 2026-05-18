@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 export const addCustomerReview = async (req, res) => {
     try {
         const { comment, rating, productId } = req.body;

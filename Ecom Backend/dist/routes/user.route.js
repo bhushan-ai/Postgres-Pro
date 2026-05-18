@@ -1,6 +1,6 @@
 import express from "express";
-import { allUsers, createUser, login, logout, refresh, updateUser, } from "../controller/user.controller";
-import { jwtMiddleware } from "../middleware/jwtAuth";
+import { allUsers, createUser, login, logout, refresh, updateUser, } from "../controller/user.controller.js";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
 const userRouter = express.Router();
 userRouter.post("/register", createUser);
 userRouter.post("/login", login);

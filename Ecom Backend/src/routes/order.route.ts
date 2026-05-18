@@ -1,12 +1,12 @@
 import express from "express";
 
-import { jwtMiddleware } from "../middleware/jwtAuth";
+import { jwtMiddleware } from "../middleware/jwtAuth.js";
 import {
   addCustomerAddress,
   getOrderById,
   getOrders,
   order,
-} from "../controller/order.controller";
+} from "../controller/order.controller.js";
 
 const orderRouter = express.Router();
 

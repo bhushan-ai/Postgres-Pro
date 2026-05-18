@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 //get cart items
 export const getCartItems = async (req, res) => {
     try {

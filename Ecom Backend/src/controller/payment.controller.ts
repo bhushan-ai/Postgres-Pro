@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../lib/prisma";
-import { razorpay } from "../lib/razorpay";
+import { prisma } from "../lib/prisma.js";
+import { razorpay } from "../lib/razorpay.js";
 import crypto from "crypto";
 
 //create payment order in razorpay
