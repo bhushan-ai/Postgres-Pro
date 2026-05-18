@@ -1,0 +1,82 @@
+import { prisma } from "../lib/prisma";
+import { razorpay } from "../lib/razorpay";
+import crypto from "crypto";
+//create payment order in razorpay
+export const createPaymentOrder = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await prisma.order.findUnique({
+            where: {
+                id: orderId,
+            },
+        });
+        if (!order) {
+            res.status(404).json({ success: false, message: "there is no  order" });
+            return;
+        }
+        const razorpayOrder = await razorpay.orders.create({
+            amount: order?.total * 100,
+            currency: "INR",
+            receipt: order?.id,
+        });
+        //update order id
+        await prisma.payment.update({
+            where: {
+                orderId: orderId,
+            },
+            data: {
+                razorpayOrderId: razorpayOrder.id,
+            },
+        });
+        res.status(201).json({
+            success: true,
+            message: "razorpay order id created",
+            data: razorpayOrder,
+        });
+    }
+    catch (error) {
+        const err = error;
+        console.log(`Something went wrong while creating payment order`, err);
+        res
+            .status(500)
+            .json({ success: false, message: "Server side error", error: err });
+    }
+};
+// verify the payment
+export const verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest("hex");
+        const isAuthentic = expectedSignature === razorpay_signature;
+        if (!isAuthentic) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid payment",
+            });
+            return;
+        }
+        await prisma.payment.updateMany({
+            where: {
+                razorpayOrderId: razorpay_order_id,
+            },
+            data: {
+                paymentStatus: "SUCCESS",
+            },
+        });
+        res.status(200).json({
+            success: true,
+            message: "Payment verified",
+        });
+    }
+    catch (error) {
+        const err = error;
+        console.log(`Something went wrong while verification of payment`, err);
+        res
+            .status(500)
+            .json({ success: false, message: "Server side error", error: err });
+    }
+};
