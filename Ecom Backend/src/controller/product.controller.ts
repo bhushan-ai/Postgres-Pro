@@ -8,7 +8,7 @@ export const searchProducts = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const query = req.body.q as string;
+    const query = req.query.q as string;
     const product = await prisma.product.findMany({
       where: {
         name: {
@@ -18,12 +18,12 @@ export const searchProducts = async (
     });
 
     //console.log(req.file)
-    if (!product) {
+    if (product.length === 0) {
       res.status(404).json({ success: false, message: "product not found" });
       return;
     }
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "product fetched",
       data: product,
@@ -31,6 +31,71 @@ export const searchProducts = async (
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while fetching the product`, err);
+
+    res
+      .status(500)
+      .json({ success: false, message: "Server side error", error: err });
+  }
+};
+
+//get all products
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    //pagination
+    let page: number = Number(req.query.page) || 1;
+    let limit: number = Number(req.query.limit) || 10;
+
+    if (page <= 0) {
+      page = 1;
+    }
+
+    if (limit <= 0 || limit > 100) {
+      limit = 10;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const allProducts = await prisma.product.findMany({
+      skip: skip,
+      take: limit,
+      select: {
+        name: true,
+        image: true,
+        description: true,
+        price: true,
+        discount: true,
+        reviews: true,
+        stock: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const totalProductCount = await prisma.product.count();
+    const totalPages = Math.ceil(totalProductCount / limit);
+
+    if (allProducts.length < 1) {
+      res.status(404).json({ success: false, message: "Products not found" });
+      return;
+    }
+    res.status(200).json({
+      success: true,
+      message: "All Products Fetched",
+      data: allProducts,
+      meta: {
+        totalPages,
+        currentPage: page,
+        limit: limit,
+      },
+    });
+    return;
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching products`, err);
 
     res
       .status(500)
@@ -69,34 +134,6 @@ export const addImage = async (req: Request, res: Response): Promise<void> => {
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while updating`, err);
-
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
-  }
-};
-
-//get all products
-export const getAllProducts = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
-  try {
-    const allProducts = await prisma.product.findMany();
-    if (allProducts.length < 1) {
-      res.status(404).json({ success: false, message: "Products not found" });
-      return;
-    }
-    res.status(200).json({
-      success: true,
-      message: "All Products Fetched",
-      products: allProducts.length,
-      data: allProducts,
-    });
-    return;
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.log(`Something went wrong while fetching products`, err);
 
     res
       .status(500)
