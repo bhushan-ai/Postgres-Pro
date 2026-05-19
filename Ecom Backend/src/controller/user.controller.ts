@@ -52,6 +52,7 @@ export const createUser = async (
 
     if (existingUser) {
       res.status(409).json({ success: false, message: "Email already Exist" });
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -75,6 +76,7 @@ export const createUser = async (
     res
       .status(201)
       .json({ success: true, message: "User Registered", data: newUser });
+    return;
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while registering the user`, err);

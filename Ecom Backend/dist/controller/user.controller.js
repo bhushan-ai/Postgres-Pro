@@ -43,6 +43,7 @@ export const createUser = async (req, res) => {
         });
         if (existingUser) {
             res.status(409).json({ success: false, message: "Email already Exist" });
+            return;
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await prisma.user.create({
@@ -62,6 +63,7 @@ export const createUser = async (req, res) => {
         res
             .status(201)
             .json({ success: true, message: "User Registered", data: newUser });
+        return;
     }
     catch (error) {
         const err = error;
