@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  // provider        = "prisma-client"
   provider        = "prisma-client-js"
-  // output          = "../generated/prisma"
   previewFeatures = ["fullTextSearchPostgres"]
 }
 
@@ -21,15 +14,10 @@ model User {
   password  String?
   role      Role      @default(USER)
   addresses Address[]
-  reviews   Review[]
-  carts     Cart[]
+  carts     Cart?
   orders    Order[]
+  reviews   Review[]
   session   Session[]
-}
-
-enum Role {
-  USER
-  ADMIN
 }
 
 model Session {
@@ -37,23 +25,21 @@ model Session {
   userId       String
   refreshToken String   @unique
   expiresAt    DateTime
-
-  user User @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model Address {
   id          String  @id @default(uuid())
-  fullName    String
-  phone       String
+  pinCode     String
+  userId      String
   addressLine String
   city        String
-  state       String
   country     String
-  pinCode     String
+  fullName    String
   isDefault   Boolean @default(false)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone       String
+  state       String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Product {
@@ -65,11 +51,11 @@ model Product {
   stock       Int
   discount    Float
   categoryId  String
-  category    Category?   @relation(fields: [categoryId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   cartItems   CartItem[]
   orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
   reviews     Review[]
 
   @@index([price])
@@ -92,45 +78,41 @@ model Review {
   comment   String
   rating    Int
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([productId])
 }
 
 model Cart {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  items CartItem[]
+  id     String     @id @default(uuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id])
+  items  CartItem[]
 }
 
 model CartItem {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   cartId    String
   productId String
   quantity  Int
-
-  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 
   @@index([cartId])
   @@index([productId])
 }
 
 model Order {
-  id     String      @id @default(uuid())
-  userId String
-  total  Float
-  status OrderStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-
-  items    OrderItem[]
-  user     User        @relation(fields: [userId], references: [id])
-  payments Payment?
+  id        String      @id @default(uuid())
+  userId    String
+  total     Float
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  payments  Payment?
 }
 
 model OrderItem {
@@ -149,14 +131,19 @@ model OrderItem {
 model Payment {
   id              String        @id @default(uuid())
   orderId         String        @unique
-  order           Order         @relation(fields: [orderId], references: [id])
-  razorpayOrderId String?
   amount          Float
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMethod   PaymentMethod
   transactionId   String?       @unique
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+  razorpayOrderId String?
+  order           Order         @relation(fields: [orderId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 enum OrderStatus {
