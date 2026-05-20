@@ -251,13 +251,6 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
         userId: userId as string,
       },
     });
-
-    // const refreshToken = req.params.id;
-
-    // await prisma.session.delete({
-    //   where: { refreshToken: refreshToken as string },
-    // });
-
     res.status(200).json({ success: true, message: "logged Out successfully" });
   } catch (error: unknown) {
     const err = error as Error;
