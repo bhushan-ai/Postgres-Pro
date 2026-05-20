@@ -70,16 +70,16 @@ export const createUser = async (
       .status(201)
       .json({ success: true, message: "User Registered", data: newUser });
 
-    try {
-      await transporter.sendMail({
+    await transporter
+      .sendMail({
         from: process.env.EMAIL_USER!,
         to: newUser.email,
         subject: `Welcome to FitCheck ${newUser.name}`,
         html: welcomeEmail,
+      })
+      .catch((err) => {
+        console.error("Mail error:", err);
       });
-    } catch (err) {
-      console.log("something went wrong while sending mail", err);
-    }
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while registering the user`, err);

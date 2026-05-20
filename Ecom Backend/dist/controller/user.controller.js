@@ -57,17 +57,16 @@ export const createUser = async (req, res) => {
         res
             .status(201)
             .json({ success: true, message: "User Registered", data: newUser });
-        try {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: newUser.email,
-                subject: `Welcome to FitCheck ${newUser.name}`,
-                html: welcomeEmail,
-            });
-        }
-        catch (err) {
-            console.log("something went wrong while sending mail", err);
-        }
+        await transporter
+            .sendMail({
+            from: process.env.EMAIL_USER,
+            to: newUser.email,
+            subject: `Welcome to FitCheck ${newUser.name}`,
+            html: welcomeEmail,
+        })
+            .catch((err) => {
+            console.error("Mail error:", err);
+        });
     }
     catch (error) {
         const err = error;
@@ -217,10 +216,6 @@ export const logout = async (req, res) => {
                 userId: userId,
             },
         });
-        // const refreshToken = req.params.id;
-        // await prisma.session.delete({
-        //   where: { refreshToken: refreshToken as string },
-        // });
         res.status(200).json({ success: true, message: "logged Out successfully" });
     }
     catch (error) {
