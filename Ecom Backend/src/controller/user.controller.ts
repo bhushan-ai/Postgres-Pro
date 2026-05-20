@@ -66,17 +66,20 @@ export const createUser = async (
       },
     });
 
-    // await transporter.sendMail({
-    //   from: process.env.EMAIL_USER!,
-    //   to: newUser.email,
-    //   subject: `Welcome to FitCheck ${newUser.name}`,
-    //   html: welcomeEmail,
-    // });
-
     res
       .status(201)
       .json({ success: true, message: "User Registered", data: newUser });
-    return;
+
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER!,
+        to: newUser.email,
+        subject: `Welcome to FitCheck ${newUser.name}`,
+        html: welcomeEmail,
+      });
+    } catch (err) {
+      console.log("something went wrong while sending mail", err);
+    }
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while registering the user`, err);
