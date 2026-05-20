@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { razorpay } from "../lib/razorpay.js";
 import crypto from "crypto";
-import { transporter } from "../services/mail.js";
+// import { transporter } from "../services/mail.js";
 
 //get user orders
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
@@ -232,12 +232,12 @@ export const order = async (req: Request, res: Response): Promise<void> => {
         },
       });
 
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER!,
-        to: userForSendingEmail?.email,
-        subject: ` Order Placed `,
-        html: `<p>Your order is successfully placed wait for confirmation </p>`,
-      });
+      // await transporter.sendMail({
+      //   from: process.env.EMAIL_USER!,
+      //   to: userForSendingEmail?.email,
+      //   subject: ` Order Placed `,
+      //   html: `<p>Your order is successfully placed wait for confirmation </p>`,
+      // });
 
       res.status(201).json({
         success: true,

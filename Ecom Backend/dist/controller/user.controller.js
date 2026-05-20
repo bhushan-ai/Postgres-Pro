@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
-import { transporter } from "../services/mail.js";
 import { welcomeEmail } from "../services/textOfMail.js";
+import { resend } from "../services/mail.js";
 //get all users
 export const allUsers = async (req, res) => {
     try {
@@ -57,8 +57,8 @@ export const createUser = async (req, res) => {
         res
             .status(201)
             .json({ success: true, message: "User Registered", data: newUser });
-        await transporter
-            .sendMail({
+        await resend.emails
+            .send({
             from: process.env.EMAIL_USER,
             to: newUser.email,
             subject: `Welcome to FitCheck ${newUser.name}`,

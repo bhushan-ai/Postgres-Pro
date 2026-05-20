@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
-import { transporter } from "../services/mail.js";
 
 //get orders  of all users
 export const getOrderOfUsers = async (
@@ -97,12 +96,12 @@ export const orderStatusUpdateByAdmin = async (
       },
     });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER!,
-      to: user?.email,
-      subject: ` Order Confirmed`,
-      html: `<p>Your <b>order is successfully Confirmed </b> wait for payment configuration</p> `,
-    });
+    // await transporter.sendMail({
+    //   from: process.env.EMAIL_USER!,
+    //   to: user?.email,
+    //   subject: ` Order Confirmed`,
+    //   html: `<p>Your <b>order is successfully Confirmed </b> wait for payment configuration</p> `,
+    // });
 
     res
       .status(200)

@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-import { transporter } from "../services/mail.js";
+// import { transporter } from "../services/mail.js";
 //get user orders
 export const getOrders = async (req, res) => {
     try {
@@ -197,12 +197,12 @@ export const order = async (req, res) => {
                     id: userId,
                 },
             });
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: userForSendingEmail?.email,
-                subject: ` Order Placed `,
-                html: `<p>Your order is successfully placed wait for confirmation </p>`,
-            });
+            // await transporter.sendMail({
+            //   from: process.env.EMAIL_USER!,
+            //   to: userForSendingEmail?.email,
+            //   subject: ` Order Placed `,
+            //   html: `<p>Your order is successfully placed wait for confirmation </p>`,
+            // });
             res.status(201).json({
                 success: true,
                 message: "order placed",

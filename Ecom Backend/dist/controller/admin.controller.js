@@ -1,5 +1,4 @@
 import { prisma } from "../lib/prisma.js";
-import { transporter } from "../services/mail.js";
 //get orders  of all users
 export const getOrderOfUsers = async (req, res) => {
     try {
@@ -77,12 +76,12 @@ export const orderStatusUpdateByAdmin = async (req, res) => {
                 status: status,
             },
         });
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: user?.email,
-            subject: ` Order Confirmed`,
-            html: `<p>Your <b>order is successfully Confirmed </b> wait for payment configuration</p> `,
-        });
+        // await transporter.sendMail({
+        //   from: process.env.EMAIL_USER!,
+        //   to: user?.email,
+        //   subject: ` Order Confirmed`,
+        //   html: `<p>Your <b>order is successfully Confirmed </b> wait for payment configuration</p> `,
+        // });
         res
             .status(200)
             .json({ success: true, message: "Order Confirmed", data: order });

@@ -3,8 +3,8 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
-import { transporter } from "../services/mail.js";
 import { welcomeEmail } from "../services/textOfMail.js";
+import { resend } from "../services/mail.js";
 
 //get all users
 export const allUsers = async (req: Request, res: Response): Promise<void> => {
@@ -70,13 +70,13 @@ export const createUser = async (
       .status(201)
       .json({ success: true, message: "User Registered", data: newUser });
 
-    await transporter
-      .sendMail({
+    await resend.emails
+      .send({
         from: process.env.EMAIL_USER!,
         to: newUser.email,
         subject: `Welcome to FitCheck ${newUser.name}`,
         html: welcomeEmail,
-      })
+      })  
       .catch((err) => {
         console.error("Mail error:", err);
       });
