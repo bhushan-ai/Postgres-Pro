@@ -66,12 +66,12 @@ export const createUser = async (
       },
     });
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER!,
-      to: newUser.email,
-      subject: `Welcome to FitCheck ${newUser.name}`,
-      html: welcomeEmail,
-    });
+    // await transporter.sendMail({
+    //   from: process.env.EMAIL_USER!,
+    //   to: newUser.email,
+    //   subject: `Welcome to FitCheck ${newUser.name}`,
+    //   html: welcomeEmail,
+    // });
 
     res
       .status(201)
