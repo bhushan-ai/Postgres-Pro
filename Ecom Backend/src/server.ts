@@ -8,6 +8,7 @@ import reviewRouter from "./routes/rating.route.js";
 import orderRouter from "./routes/order.route.js";
 import adminRouter from "./routes/admin.route.js";
 import paymentRouter from "./routes/payment.route.js";
+import { resend } from "./services/mail.js";
 
 const app = express();
 
