@@ -51,3 +51,4 @@ model Participant {
 
   @@id([userId, conversationId])
 }
+
