@@ -34,7 +34,7 @@ export const createUser = async (
 ): Promise<void> => {
   const { name, email, password } = req.body;
   try {
-    if (!name || !email || !password ) {
+    if (!name || !email || !password) {
       res.status(400).json({
         success: "false",
         message: "All Fields are required",
@@ -60,7 +60,6 @@ export const createUser = async (
         name,
         email,
         password: hashedPassword,
-    
       },
     });
 
@@ -98,50 +97,53 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         .json({ success: false, message: "all fields are required" });
       return;
     }
+
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      res.status(409).json({ success: false, message: "Email is Invalid" });
+      res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
       return;
     }
-    const checkPass = await bcrypt.compare(password, user?.password as string);
+
+    const checkPass = await bcrypt.compare(password, user.password);
 
     if (!checkPass) {
-      res.status(401).json({ success: false, message: "password incorrect" });
+      res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
       return;
     }
 
-    const accessToken = generateAccessToken(user?.id as string);
-    const refreshToken = generateRefreshToken(user?.id as string);
+    const accessToken = generateAccessToken(user.id as string);
+    const refreshToken = generateRefreshToken(user.id as string);
 
-    // const alreadyLoggedIn = await prisma.session.findUnique({
-    //   where: {
-    //     refreshToken: refreshToken,
-    //   },
-    // });
-
-    // if (alreadyLoggedIn) {
-    //   res.status(401).json({ success: false, message: "already loggedIn" });
-    //   return;
-    // } else {
-    //   await prisma.session.create({
-    //     data: {
-    //       userId: user?.id as string,
-    //       refreshToken: refreshToken,
-    //       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    //     },
-    //   });
-
-    res.status(200).json({
-      succuss: true,
-      message: "LoggedIn Successfully",
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000,
     });
 
-    //   accessToken: accessToken,
-    //   refreshToken: refreshToken,
-    //   data: user,
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    const { password: _, ...safeUser } = user;
+
+    res.status(200).json({
+      success: true,
+      message: "LoggedIn Successfully",
+      data: safeUser,
+    });
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while login the user`, err);
@@ -154,7 +156,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 //refresh
 export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       res
@@ -162,28 +164,35 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
         .json({ success: false, message: "Refresh token not found" });
       return;
     }
-
+    let payload;
     try {
-      const payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET!);
+      payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET!) as {
+        id: string;
+      };
     } catch (error) {
       res.status(403).json({ success: false, message: "Invalid Token" });
+      return;
     }
+    const accessToken = generateAccessToken(payload.id);
+    const newRefreshToken = generateRefreshToken(payload.id);
 
-    // const session = await prisma.session.findUnique({
-    //   where: {
-    //     refreshToken: refreshToken,
-    //   },
-    // });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000,
+    });
 
-    // if (!session || session.expiresAt < new Date()) {
-    //   res.status(403).json({ success: false, message: "session expired" });
-    // }
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
-    // const accessToken = generateAccessToken(session?.userId as string);
     res.status(200).json({
       success: true,
       message: "Refreshed",
-      // accessToken: accessToken
     });
   } catch (error: unknown) {
     const err = error as Error;
@@ -201,7 +210,7 @@ export const updateUser = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { name, email, password, address } = req.body;
+    const { name, email, password } = req.body;
 
     if (!req.user) {
       res.status(404).json({ success: false, message: "User not found" });
@@ -218,7 +227,6 @@ export const updateUser = async (
         ...(name && { name }),
         ...(email && { email }),
         ...(password && { password }),
-        ...(address && { name }),
       },
     });
 
@@ -238,18 +246,16 @@ export const updateUser = async (
 //logout
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
-    if (!req.user) {
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
-    }
-
-    const userId = req.user?.id;
-
-    // await prisma.session.deleteMany({
-    //   where: {
-    //     userId: userId as string,
-    //   },
-    // });
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
     res.status(200).json({ success: true, message: "logged Out successfully" });
   } catch (error: unknown) {
     const err = error as Error;
