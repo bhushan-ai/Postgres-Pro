@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
-import { Request, Response } from "express";
+import { Context } from "hono";
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcrypt";
+import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 
 //get all users
-export const allUsers = async (req: Request, res: Response): Promise<void> => {
+export const allUsers = async (c: Context): Promise<Response> => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -14,32 +15,41 @@ export const allUsers = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    res
-      .status(200)
-      .json({ success: true, message: "Users fetched", data: users });
+    return c.json(
+      {
+        success: true,
+        message: "Users fetched",
+        data: users,
+      },
+      200,
+    );
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while fetching the users`, err);
 
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
   }
 };
 
 //create
-export const createUser = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
-  const { name, email, password } = req.body;
+export const createUser = async (c: Context): Promise<Response> => {
+  const { name, email, password } = await c.req.json();
   try {
     if (!name || !email || !password) {
-      res.status(400).json({
-        success: "false",
-        message: "All Fields are required",
-      });
-      return;
+      return c.json(
+        {
+          success: false,
+          message: "All Fields are required",
+        },
+        400,
+      );
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -49,8 +59,7 @@ export const createUser = async (
     });
 
     if (existingUser) {
-      res.status(409).json({ success: false, message: "Email already Exist" });
-      return;
+      return c.json({ success: false, message: "Email already Exist" }, 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,9 +72,16 @@ export const createUser = async (
       },
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "User Registered", data: newUser });
+    const { password: _, ...safeUser } = newUser;
+
+    return c.json(
+      {
+        success: true,
+        message: "User Registered",
+        data: safeUser,
+      },
+      201,
+    );
 
     // await resend.emails
     //   .send({
@@ -81,21 +97,29 @@ export const createUser = async (
     const err = error as Error;
     console.log(`Something went wrong while registering the user`, err);
 
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
   }
 };
 
 //login
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (c: Context): Promise<Response> => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = await c.req.json();
     if (!email || !password) {
-      res
-        .status(400)
-        .json({ success: false, message: "all fields are required" });
-      return;
+      return c.json(
+        {
+          success: false,
+          message: "all fields are required",
+        },
+        400,
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -103,34 +127,38 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (!user) {
-      res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-      return;
+      return c.json(
+        {
+          success: false,
+          message: "Invalid credentials",
+        },
+        401,
+      );
     }
 
     const checkPass = await bcrypt.compare(password, user.password);
 
     if (!checkPass) {
-      res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-      return;
+      return c.json(
+        {
+          success: false,
+          message: "Invalid credentials",
+        },
+        401,
+      );
     }
 
     const accessToken = generateAccessToken(user.id as string);
     const refreshToken = generateRefreshToken(user.id as string);
 
-    res.cookie("accessToken", accessToken, {
+    setCookie(c, "accessToken", accessToken, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
       maxAge: 15 * 60 * 1000,
     });
 
-    res.cookie("refreshToken", refreshToken, {
+    setCookie(c, "refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
@@ -139,30 +167,41 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const { password: _, ...safeUser } = user;
 
-    res.status(200).json({
-      success: true,
-      message: "LoggedIn Successfully",
-      data: safeUser,
-    });
+    return c.json(
+      {
+        success: true,
+        message: "LoggedIn Successfully",
+        data: safeUser,
+      },
+      200,
+    );
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while login the user`, err);
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
   }
 };
 
 //refresh
-export const refresh = async (req: Request, res: Response): Promise<void> => {
+export const refresh = async (c: Context): Promise<Response> => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = getCookie(c, "refreshToken");
 
     if (!refreshToken) {
-      res
-        .status(401)
-        .json({ success: false, message: "Refresh token not found" });
-      return;
+      return c.json(
+        {
+          success: false,
+          message: "Refresh token not found",
+        },
+        401,
+      );
     }
     let payload;
     try {
@@ -170,99 +209,109 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
         id: string;
       };
     } catch (error) {
-      res.status(403).json({ success: false, message: "Invalid Token" });
-      return;
+      return c.json(
+        {
+          success: false,
+          message: "Invalid Token",
+        },
+        403,
+      );
     }
     const accessToken = generateAccessToken(payload.id);
     const newRefreshToken = generateRefreshToken(payload.id);
 
-    res.cookie("accessToken", accessToken, {
+    setCookie(c, "accessToken", accessToken, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
       maxAge: 15 * 60 * 1000,
     });
 
-    res.cookie("refreshToken", newRefreshToken, {
+    setCookie(c, "refreshToken", newRefreshToken, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Refreshed",
-    });
+    return c.json(
+      {
+        success: true,
+        message: "Refreshed",
+      },
+      200,
+    );
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while refreshing`, err);
 
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
   }
 };
 
 //update
-export const updateUser = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const updateUser = async (c: Context): Promise<Response> => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = await c.req.json();
+    const userId = c.get("user") as { id: string };
 
-    if (!req.user) {
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
+    if (!userId) {
+      return c.json({ success: false, message: "User not found" }, 404);
     }
 
-    const userId = req.user?.id;
+    const hashPass = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.update({
       where: {
-        id: userId,
+        id: userId.id,
       },
       data: {
         ...(name && { name }),
         ...(email && { email }),
-        ...(password && { password }),
+        ...(password && { password: hashPass }),
       },
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "user updated", data: user });
+    return c.json({ success: true, message: "user updated", data: user }, 201);
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while updating user`, err);
 
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
   }
 };
 
 //logout
-export const logout = async (req: Request, res: Response): Promise<void> => {
+export const logout = async (c: Context): Promise<Response> => {
   try {
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      secure: process.env.NODE_ENV === "production",
-    });
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      secure: process.env.NODE_ENV === "production",
-    });
-    res.status(200).json({ success: true, message: "logged Out successfully" });
+    deleteCookie(c, "accessToken");
+    deleteCookie(c, "refreshToken");
+    return c.json({ success: true, message: "logged Out successfully" }, 200);
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while logging out`, err);
 
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
   }
 };

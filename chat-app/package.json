@@ -7,7 +7,7 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "bun dist/index.js",
-    "dev": "bun --watch src/index.ts"
+    "dev": "bun--watch run --hot src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -23,13 +23,11 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/dotenv": "^8.2.3",
-    "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "hono": "^4.12.22",
+    "hono": "^4.12.23",
     "jsonwebtoken": "^9.0.3",
     "zod": "^4.4.3"
   }

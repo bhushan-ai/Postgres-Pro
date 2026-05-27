@@ -1,19 +1,20 @@
 import "dotenv/config";
-import express, { Request, Response } from "express";
-import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.route";
-const app = express();
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+
+const app = new Hono<{
+  Variables: Variables;
+}>();
 
 //middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use("*", logger());
 
 // Routes
-app.get("/", (req: Request, res: Response) => {
-  return res.send("API's are working!!");
+app.get("/", (c) => {
+  return c.text("API's are working!!");
 });
 
-app.use("/api/user", userRouter);
+app.route("/api/user", userRouter);
 
 export default app;
