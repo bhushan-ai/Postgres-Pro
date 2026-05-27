@@ -1,19 +1,16 @@
-import { Request, Response, NextFunction } from "express";
+import { Next } from "./../../node_modules/hono/dist/types/types.d";
+import { Context } from "hono";
 import jwt from "jsonwebtoken";
+import { getCookie } from "hono/cookie";
 import { prisma } from "../lib/prisma";
 const secret = process.env.SECRET as string;
 
 //auth
-export const jwtAuth = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+export const jwtAuth = async (c: Context, next: Next) => {
   try {
-    const token = req.cookies?.token;
-
+    const token = getCookie(c, "accessToken");
     if (!token) {
-      res.status(400).json({ success: true, message: "token not found" });
+      return c.json({ success: true, message: "token not found" }, 400);
     }
 
     const decodedToken = jwt.verify(token, secret) as {
@@ -26,17 +23,21 @@ export const jwtAuth = async (
       },
     });
     if (!user) {
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
+      return c.json({ success: false, message: "User not found" }, 404);
     }
 
-    req.user = user;
-    next();
+    c.set("user", user);
+
+    await next();
   } catch (error: unknown) {
-    const err = error as Error;
-    console.log(`Something went wrong in user Authentication`, err);
-    res
-      .status(500)
-      .json({ success: false, message: "Server side error", error: err });
+    console.log("Auth error", error);
+
+    return c.json(
+      {
+        success: false,
+        message: "Unauthorized",
+      },
+      401,
+    );
   }
 };
