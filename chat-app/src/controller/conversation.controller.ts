@@ -85,8 +85,10 @@ export const createConversation = async (c: Context) => {
 
 export const getUserConversations = async (c: Context) => {
   try {
-    const id = c.req.param("id");
-    if (!id) {
+    const user = c.get("user") as {
+      id: string;
+    };
+    if (!user) {
       return c.json(
         { success: false, message: "ConversationId not found" },
         404,
@@ -97,7 +99,7 @@ export const getUserConversations = async (c: Context) => {
       where: {
         participants: {
           some: {
-            userId: id,
+            userId: user.id,
           },
         },
       },
@@ -119,7 +121,78 @@ export const getUserConversations = async (c: Context) => {
       },
     });
 
-    
+    return c.json(
+      {
+        success: true,
+        message: "Conversation Found",
+        data: conversation,
+      },
+      200,
+    );
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching one Conversation`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};
+
+export const getSingleConversation = async (c: Context) => {
+  try {
+    const id = c.req.param("id");
+    const user = c.get("user") as {
+      id: string;
+    };
+
+    if (!id) {
+      return c.json(
+        { success: false, message: "ConversationId not found" },
+        404,
+      );
+    }
+
+    //get convo
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id: id,
+        participants: {
+          some: {
+            userId: user.id,
+          },
+        },
+      },
+
+      include: {
+        participants: {
+          include: {
+            user: true,
+          },
+        },
+        messages: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      return c.json(
+        {
+          success: true,
+          message: "Conversation not found",
+        },
+        404,
+      );
+    }
+
     return c.json(
       {
         success: true,
