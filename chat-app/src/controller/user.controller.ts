@@ -155,14 +155,14 @@ export const login = async (c: Context): Promise<Response> => {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 15 * 60,
     });
 
     setCookie(c, "refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     const { password: _, ...safeUser } = user;
@@ -224,14 +224,14 @@ export const refresh = async (c: Context): Promise<Response> => {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 15 * 60,
     });
 
     setCookie(c, "refreshToken", newRefreshToken, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     return c.json(

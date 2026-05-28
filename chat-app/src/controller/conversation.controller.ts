@@ -82,3 +82,15 @@ export const createConversation = async (c: Context) => {
     );
   }
 };
+
+export const findConversation = async (c: Context) => {
+  try {
+    const id = c.req.param("id");
+    if (!id) {
+      return c.json(
+        { success: false, message: "ConversationId not found" },
+        404,
+      );
+    }
+  } catch (error) {}
+};
