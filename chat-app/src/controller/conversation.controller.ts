@@ -42,7 +42,7 @@ export const createConversation = async (c: Context) => {
 
     //create conversation
 
-    const convoCreate = await prisma.conversation.create({
+    const convoCreated = await prisma.conversation.create({
       data: {
         participants: {
           create: [
@@ -63,8 +63,8 @@ export const createConversation = async (c: Context) => {
     return c.json(
       {
         success: true,
-        message: "Conversation Created",
-        data: convoCreate,
+        message: "Conversation Found",
+        data: convoCreated,
       },
       201,
     );
@@ -83,7 +83,7 @@ export const createConversation = async (c: Context) => {
   }
 };
 
-export const findConversation = async (c: Context) => {
+export const getUserConversations = async (c: Context) => {
   try {
     const id = c.req.param("id");
     if (!id) {
@@ -92,5 +92,53 @@ export const findConversation = async (c: Context) => {
         404,
       );
     }
-  } catch (error) {}
+
+    const conversation = await prisma.conversation.findMany({
+      where: {
+        participants: {
+          some: {
+            userId: id,
+          },
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: true,
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    
+    return c.json(
+      {
+        success: true,
+        message: "Conversation Found",
+        data: conversation,
+      },
+      200,
+    );
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while fetching one Conversation`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
 };
