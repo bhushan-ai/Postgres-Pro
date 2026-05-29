@@ -30,10 +30,10 @@ model Message {
   user           User         @relation(fields: [senderId], references: [id])
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-
+  editedAt       DateTime
+ 
   @@index([conversationId])
   @@index([senderId])
-
 }
 
 model Conversation {
@@ -51,4 +51,3 @@ model Participant {
 
   @@id([userId, conversationId])
 }
-

@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
 
-const sendMessage = async (c: Context) => {
+export const sendMessage = async (c: Context) => {
   try {
     const { content } = await c.req.json();
     const conversationId = c.req.param("conversationId");
@@ -92,7 +92,7 @@ const sendMessage = async (c: Context) => {
 };
 
 //delete message
-const deleteMessage = async (c: Context) => {
+export const deleteMessage = async (c: Context) => {
   try {
     const conversationId = c.req.param("conversationId");
     const messageId = c.req.param("messageId");
@@ -170,4 +170,91 @@ const deleteMessage = async (c: Context) => {
   }
 };
 
+//edit message
+const editMessage = async (c: Context) => {
+  try {
+    const conversationId = c.req.param("conversationId");
+    const messageId = c.req.param("messageId");
+    const { content } = await c.req.json();
 
+    const sender = c.get("user") as {
+      id: string;
+    };
+
+    if (!content?.trim()) {
+      return c.json({ success: false, message: "content is required" }, 400);
+    }
+
+    if (!sender) {
+      return c.json({ success: false, message: "sender not found" }, 400);
+    }
+
+    if (!messageId) {
+      return c.json({ success: false, message: "messageId is required" }, 400);
+    }
+
+    if (!conversationId) {
+      return c.json(
+        {
+          success: false,
+          message: "Conversation id required",
+        },
+        400,
+      );
+    }
+
+    const message = await prisma.message.findFirst({
+      where: {
+        id: messageId,
+        conversationId,
+      },
+    });
+
+    if (!message) {
+      return c.json(
+        {
+          success: false,
+          message: "Message not found",
+        },
+        404,
+      );
+    }
+
+    if (sender.id !== message.senderId) {
+      return c.json(
+        {
+          success: false,
+          message: "Not authorized",
+        },
+        403,
+      );
+    }
+    const updatedMessage = await prisma.message.update({
+      where: {
+        id: messageId,
+      },
+      data: {
+        content,
+        editedAt: new Date(),
+      },
+    });
+
+    return c.json({
+      success: true,
+      message: "message edited",
+      data: updatedMessage,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while updating the message`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};
