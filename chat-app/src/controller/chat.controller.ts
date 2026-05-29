@@ -90,21 +90,23 @@ const sendMessage = async (c: Context) => {
     );
   }
 };
+
+//delete message
 const deleteMessage = async (c: Context) => {
   try {
-    const { content } = await c.req.json();
     const conversationId = c.req.param("conversationId");
+    const messageId = c.req.param("messageId");
 
     const sender = c.get("user") as {
       id: string;
     };
 
     if (!sender) {
-      return c.json({ success: false, message: "sender not found" }, 404);
+      return c.json({ success: false, message: "sender not found" }, 400);
     }
 
-    if (!content) {
-      return c.json({ success: false, message: "content is required" }, 404);
+    if (!messageId) {
+      return c.json({ success: false, message: "messageId is required" }, 400);
     }
 
     if (!conversationId) {
@@ -117,57 +119,45 @@ const deleteMessage = async (c: Context) => {
       );
     }
 
-    const conversation = await prisma.conversation.findUnique({
+    const message = await prisma.message.findFirst({
       where: {
-        id: conversationId,
-      },
-      include: {
-        participants: true,
+        id: messageId,
+        conversationId,
       },
     });
 
-    if (!conversation) {
-      return c.json({ success: false, message: "conversation not found" }, 404);
-    }
-
-    const isParticipant = conversation.participants.some(
-      (participant) => participant.userId === sender.id,
-    );
-
-    if (!isParticipant) {
+    if (!message) {
       return c.json(
         {
           success: false,
-          message: "sender is not a participant in this conversation",
+          message: "Message not found",
+        },
+        404,
+      );
+    }
+    if (sender.id !== message?.senderId) {
+      return c.json(
+        {
+          success: false,
+          message: "Not authorized",
         },
         403,
       );
     }
-
-    const message = await prisma.message.create({
-      data: {
-        content: content,
-        conversationId: conversation.id,
-        senderId: sender.id,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+    const deletedMessage = await prisma.message.delete({
+      where: {
+        id: messageId,
       },
     });
 
     return c.json({
       success: true,
-      message: "message stored",
-      data: message,
+      message: "message deleted",
+      data: deletedMessage,
     });
   } catch (error: unknown) {
     const err = error as Error;
-    console.log(`Something went wrong while creating send message`, err);
+    console.log(`Something went wrong while deleting the message`, err);
 
     return c.json(
       {
@@ -179,4 +169,5 @@ const deleteMessage = async (c: Context) => {
     );
   }
 };
+
 
