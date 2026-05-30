@@ -10,6 +10,7 @@ export const allUsers = async (c: Context): Promise<Response> => {
   try {
     const users = await prisma.user.findMany({
       select: {
+        id: true,
         name: true,
         email: true,
       },
@@ -301,6 +302,25 @@ export const logout = async (c: Context): Promise<Response> => {
     deleteCookie(c, "accessToken");
     deleteCookie(c, "refreshToken");
     return c.json({ success: true, message: "logged Out successfully" }, 200);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while logging out`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};
+
+export const deleteAllUser = async (c: Context): Promise<Response> => {
+  try {
+    await prisma.user.deleteMany();
+    return c.json({ success: true, message: "Delete Out successfully" }, 200);
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while logging out`, err);

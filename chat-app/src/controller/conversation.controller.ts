@@ -95,7 +95,7 @@ export const getUserConversations = async (c: Context) => {
       );
     }
 
-    const conversation = await prisma.conversation.findMany({
+    const conversations = await prisma.conversation.findMany({
       where: {
         participants: {
           some: {
@@ -121,17 +121,21 @@ export const getUserConversations = async (c: Context) => {
       },
     });
 
+    if (conversations.length <= 0) {
+      return c.json({ success: false, message: "No conversation yet" }, 404);
+    }
+
     return c.json(
       {
         success: true,
         message: "Conversation Found",
-        data: conversation,
+        data: conversations,
       },
       200,
     );
   } catch (error: unknown) {
     const err = error as Error;
-    console.log(`Something went wrong while fetching one Conversation`, err);
+    console.log(`Something went wrong while fetching all Conversation`, err);
 
     return c.json(
       {

@@ -3,7 +3,7 @@ import { Context } from "hono";
 import jwt from "jsonwebtoken";
 import { getCookie } from "hono/cookie";
 import { prisma } from "../lib/prisma";
-const secret = process.env.SECRET as string;
+const secret = process.env.ACCESS_SECRET as string;
 
 //auth
 export const jwtAuth = async (c: Context, next: Next) => {

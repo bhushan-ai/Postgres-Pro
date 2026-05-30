@@ -16,6 +16,7 @@ CREATE TABLE "Message" (
     "senderId" TEXT NOT NULL,
     "conversationId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "editedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
@@ -23,6 +24,7 @@ CREATE TABLE "Message" (
 -- CreateTable
 CREATE TABLE "Conversation" (
     "id" TEXT NOT NULL,
+    "isGroup" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")

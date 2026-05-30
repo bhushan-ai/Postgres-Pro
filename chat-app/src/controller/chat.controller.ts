@@ -1,10 +1,11 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
 
+
+//send message
 export const sendMessage = async (c: Context) => {
   try {
-    const { content } = await c.req.json();
-    const conversationId = c.req.param("conversationId");
+    const { content, targetedUserId } = await c.req.json();
 
     const sender = c.get("user") as {
       id: string;
@@ -14,51 +15,64 @@ export const sendMessage = async (c: Context) => {
       return c.json({ success: false, message: "sender not found" }, 404);
     }
 
-    if (!content) {
-      return c.json({ success: false, message: "content is required" }, 404);
-    }
-
-    if (!conversationId) {
-      return c.json(
-        {
-          success: false,
-          message: "Conversation id required",
-        },
-        400,
-      );
-    }
-
-    const conversation = await prisma.conversation.findUnique({
+    const targetedUser = await prisma.user.findUnique({
       where: {
-        id: conversationId,
-      },
-      include: {
-        participants: true,
+        id: targetedUserId,
       },
     });
 
-    if (!conversation) {
-      return c.json({ success: false, message: "conversation not found" }, 404);
+    if (!targetedUser) {
+      return c.json({ success: false, message: "receiver not found" }, 404);
+    }
+    if (!content?.trim()) {
+      return c.json({ success: false, message: "content is required" }, 404);
     }
 
-    const isParticipant = conversation.participants.some(
-      (participant) => participant.userId === sender.id,
-    );
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        isGroup: false,
+        AND: [
+          {
+            participants: {
+              some: {
+                userId: sender.id,
+              },
+            },
+          },
+          {
+            participants: {
+              some: {
+                userId: targetedUser.id,
+              },
+            },
+          },
+        ],
+      },
+    });
 
-    if (!isParticipant) {
-      return c.json(
-        {
-          success: false,
-          message: "sender is not a participant in this conversation",
+    let activeConversation = conversation;
+
+    if (!activeConversation) {
+      activeConversation = await prisma.conversation.create({
+        data: {
+          participants: {
+            create: [
+              {
+                userId: sender.id,
+              },
+              {
+                userId: targetedUser.id,
+              },
+            ],
+          },
         },
-        403,
-      );
+      });
     }
 
     const message = await prisma.message.create({
       data: {
         content: content,
-        conversationId: conversation.id,
+        conversationId: activeConversation.id,
         senderId: sender.id,
       },
       include: {
@@ -171,7 +185,7 @@ export const deleteMessage = async (c: Context) => {
 };
 
 //edit message
-const editMessage = async (c: Context) => {
+export const editMessage = async (c: Context) => {
   try {
     const conversationId = c.req.param("conversationId");
     const messageId = c.req.param("messageId");

@@ -31,14 +31,15 @@ model Message {
   createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   editedAt       DateTime
- 
+
   @@index([conversationId])
   @@index([senderId])
 }
 
 model Conversation {
   id           String        @id @default(uuid())
-  Messages     Message[]
+  isGroup      Boolean       @default(false)
+  messages     Message[]
   createdAt    DateTime      @default(now())
   participants Participant[]
 }
