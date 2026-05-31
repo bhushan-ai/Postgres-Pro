@@ -26,16 +26,19 @@ export type AggregateConversation = {
 
 export type ConversationMinAggregateOutputType = {
   id: string | null
+  isGroup: boolean | null
   createdAt: Date | null
 }
 
 export type ConversationMaxAggregateOutputType = {
   id: string | null
+  isGroup: boolean | null
   createdAt: Date | null
 }
 
 export type ConversationCountAggregateOutputType = {
   id: number
+  isGroup: number
   createdAt: number
   _all: number
 }
@@ -43,16 +46,19 @@ export type ConversationCountAggregateOutputType = {
 
 export type ConversationMinAggregateInputType = {
   id?: true
+  isGroup?: true
   createdAt?: true
 }
 
 export type ConversationMaxAggregateInputType = {
   id?: true
+  isGroup?: true
   createdAt?: true
 }
 
 export type ConversationCountAggregateInputType = {
   id?: true
+  isGroup?: true
   createdAt?: true
   _all?: true
 }
@@ -131,6 +137,7 @@ export type ConversationGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 
 export type ConversationGroupByOutputType = {
   id: string
+  isGroup: boolean
   createdAt: Date
   _count: ConversationCountAggregateOutputType | null
   _min: ConversationMinAggregateOutputType | null
@@ -157,15 +164,17 @@ export type ConversationWhereInput = {
   OR?: Prisma.ConversationWhereInput[]
   NOT?: Prisma.ConversationWhereInput | Prisma.ConversationWhereInput[]
   id?: Prisma.StringFilter<"Conversation"> | string
+  isGroup?: Prisma.BoolFilter<"Conversation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
-  Messages?: Prisma.MessageListRelationFilter
+  messages?: Prisma.MessageListRelationFilter
   participants?: Prisma.ParticipantListRelationFilter
 }
 
 export type ConversationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  isGroup?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  Messages?: Prisma.MessageOrderByRelationAggregateInput
+  messages?: Prisma.MessageOrderByRelationAggregateInput
   participants?: Prisma.ParticipantOrderByRelationAggregateInput
 }
 
@@ -174,13 +183,15 @@ export type ConversationWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ConversationWhereInput | Prisma.ConversationWhereInput[]
   OR?: Prisma.ConversationWhereInput[]
   NOT?: Prisma.ConversationWhereInput | Prisma.ConversationWhereInput[]
+  isGroup?: Prisma.BoolFilter<"Conversation"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Conversation"> | Date | string
-  Messages?: Prisma.MessageListRelationFilter
+  messages?: Prisma.MessageListRelationFilter
   participants?: Prisma.ParticipantListRelationFilter
 }, "id">
 
 export type ConversationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  isGroup?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ConversationCountOrderByAggregateInput
   _max?: Prisma.ConversationMaxOrderByAggregateInput
@@ -192,49 +203,57 @@ export type ConversationScalarWhereWithAggregatesInput = {
   OR?: Prisma.ConversationScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ConversationScalarWhereWithAggregatesInput | Prisma.ConversationScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Conversation"> | string
+  isGroup?: Prisma.BoolWithAggregatesFilter<"Conversation"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Conversation"> | Date | string
 }
 
 export type ConversationCreateInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
-  Messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+  messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
   participants?: Prisma.ParticipantCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
-  Messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  Messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
   participants?: Prisma.ParticipantUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  Messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateManyInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
 }
 
 export type ConversationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ConversationUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -245,16 +264,19 @@ export type ConversationScalarRelationFilter = {
 
 export type ConversationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  isGroup?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type ConversationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  isGroup?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type ConversationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  isGroup?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -270,6 +292,10 @@ export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
   upsert?: Prisma.ConversationUpsertWithoutMessagesInput
   connect?: Prisma.ConversationWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ConversationUpdateToOneWithWhereWithoutMessagesInput, Prisma.ConversationUpdateWithoutMessagesInput>, Prisma.ConversationUncheckedUpdateWithoutMessagesInput>
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type ConversationCreateNestedOneWithoutParticipantsInput = {
@@ -288,12 +314,14 @@ export type ConversationUpdateOneRequiredWithoutParticipantsNestedInput = {
 
 export type ConversationCreateWithoutMessagesInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
   participants?: Prisma.ParticipantCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutMessagesInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutConversationInput
 }
@@ -316,26 +344,30 @@ export type ConversationUpdateToOneWithWhereWithoutMessagesInput = {
 
 export type ConversationUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.ParticipantUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationCreateWithoutParticipantsInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
-  Messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
+  messages?: Prisma.MessageCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationUncheckedCreateWithoutParticipantsInput = {
   id?: string
+  isGroup?: boolean
   createdAt?: Date | string
-  Messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutConversationInput
 }
 
 export type ConversationCreateOrConnectWithoutParticipantsInput = {
@@ -356,14 +388,16 @@ export type ConversationUpdateToOneWithWhereWithoutParticipantsInput = {
 
 export type ConversationUpdateWithoutParticipantsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  Messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutConversationNestedInput
 }
 
 export type ConversationUncheckedUpdateWithoutParticipantsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  isGroup?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  Messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutConversationNestedInput
 }
 
 
@@ -372,12 +406,12 @@ export type ConversationUncheckedUpdateWithoutParticipantsInput = {
  */
 
 export type ConversationCountOutputType = {
-  Messages: number
+  messages: number
   participants: number
 }
 
 export type ConversationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  Messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
+  messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
   participants?: boolean | ConversationCountOutputTypeCountParticipantsArgs
 }
 
@@ -408,30 +442,34 @@ export type ConversationCountOutputTypeCountParticipantsArgs<ExtArgs extends run
 
 export type ConversationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  isGroup?: boolean
   createdAt?: boolean
-  Messages?: boolean | Prisma.Conversation$MessagesArgs<ExtArgs>
+  messages?: boolean | Prisma.Conversation$messagesArgs<ExtArgs>
   participants?: boolean | Prisma.Conversation$participantsArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["conversation"]>
 
 export type ConversationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  isGroup?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["conversation"]>
 
 export type ConversationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  isGroup?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["conversation"]>
 
 export type ConversationSelectScalar = {
   id?: boolean
+  isGroup?: boolean
   createdAt?: boolean
 }
 
-export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt", ExtArgs["result"]["conversation"]>
+export type ConversationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "isGroup" | "createdAt", ExtArgs["result"]["conversation"]>
 export type ConversationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  Messages?: boolean | Prisma.Conversation$MessagesArgs<ExtArgs>
+  messages?: boolean | Prisma.Conversation$messagesArgs<ExtArgs>
   participants?: boolean | Prisma.Conversation$participantsArgs<ExtArgs>
   _count?: boolean | Prisma.ConversationCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -441,11 +479,12 @@ export type ConversationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types
 export type $ConversationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Conversation"
   objects: {
-    Messages: Prisma.$MessagePayload<ExtArgs>[]
+    messages: Prisma.$MessagePayload<ExtArgs>[]
     participants: Prisma.$ParticipantPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    isGroup: boolean
     createdAt: Date
   }, ExtArgs["result"]["conversation"]>
   composites: {}
@@ -841,7 +880,7 @@ readonly fields: ConversationFieldRefs;
  */
 export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  Messages<T extends Prisma.Conversation$MessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$MessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  messages<T extends Prisma.Conversation$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   participants<T extends Prisma.Conversation$participantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Conversation$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -873,6 +912,7 @@ export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends run
  */
 export interface ConversationFieldRefs {
   readonly id: Prisma.FieldRef<"Conversation", 'String'>
+  readonly isGroup: Prisma.FieldRef<"Conversation", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Conversation", 'DateTime'>
 }
     
@@ -1267,9 +1307,9 @@ export type ConversationDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
- * Conversation.Messages
+ * Conversation.messages
  */
-export type Conversation$MessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Conversation$messagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the Message
    */

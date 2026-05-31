@@ -1,11 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -17,8 +12,8 @@ model User {
   email        String        @unique
   name         String?
   password     String
-  messages     Message[]
   createdAt    DateTime      @default(now())
+  messages     Message[]
   participants Participant[]
 }
 
@@ -27,10 +22,10 @@ model Message {
   content        String
   senderId       String
   conversationId String
-  user           User         @relation(fields: [senderId], references: [id])
   createdAt      DateTime     @default(now())
+  editedAt       DateTime?
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-  editedAt       DateTime
+  user           User         @relation(fields: [senderId], references: [id])
 
   @@index([conversationId])
   @@index([senderId])
@@ -39,16 +34,16 @@ model Message {
 model Conversation {
   id           String        @id @default(uuid())
   isGroup      Boolean       @default(false)
-  messages     Message[]
   createdAt    DateTime      @default(now())
+  messages     Message[]
   participants Participant[]
 }
 
 model Participant {
   userId         String
   conversationId String
-  user           User         @relation(fields: [userId], references: [id])
   conversation   Conversation @relation(fields: [conversationId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
 
   @@id([userId, conversationId])
 }

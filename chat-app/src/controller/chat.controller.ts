@@ -1,7 +1,6 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
 
-
 //send message
 export const sendMessage = async (c: Context) => {
   try {
@@ -30,7 +29,6 @@ export const sendMessage = async (c: Context) => {
 
     const conversation = await prisma.conversation.findFirst({
       where: {
-        isGroup: false,
         AND: [
           {
             participants: {
@@ -217,6 +215,11 @@ export const editMessage = async (c: Context) => {
       );
     }
 
+    // console.log("Prisma client loaded");
+    // console.dir((prisma as any)._runtimeDataModel, {
+    //   depth: null,
+    // });
+    // console.log(prisma.constructor.name);
     const message = await prisma.message.findFirst({
       where: {
         id: messageId,
@@ -243,12 +246,13 @@ export const editMessage = async (c: Context) => {
         403,
       );
     }
+
     const updatedMessage = await prisma.message.update({
       where: {
         id: messageId,
       },
       data: {
-        content,
+        ...(content && { content }),
         editedAt: new Date(),
       },
     });
@@ -258,9 +262,8 @@ export const editMessage = async (c: Context) => {
       message: "message edited",
       data: updatedMessage,
     });
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.log(`Something went wrong while updating the message`, err);
+  } catch (err: unknown) {
+    console.dir(err, { depth: null });
 
     return c.json(
       {
