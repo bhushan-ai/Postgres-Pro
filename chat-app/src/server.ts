@@ -10,8 +10,6 @@ const app = new Hono<{
   Variables: Variables;
 }>();
 
-
-
 //middleware
 app.use("*", logger());
 

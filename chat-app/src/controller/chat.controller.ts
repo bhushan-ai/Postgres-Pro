@@ -1,8 +1,6 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
-import { getIo } from "../socket/socket";
-
-const io = getIo();
+import { getIo, onlineUsers } from "../socket/socket";
 
 //send message
 export const sendMessage = async (c: Context) => {
@@ -86,8 +84,18 @@ export const sendMessage = async (c: Context) => {
       },
     });
 
-    io.emit("new-message", message);
+    const io = getIo();
     
+    if (!io) {
+      console.log("Socket.IO not initialized");
+    }
+    const receiverSocketId = onlineUsers.get(targetedUser.id);
+
+    //receiver is online?
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("new-message", message);
+    }
+
     return c.json({
       success: true,
       message: "message stored",
