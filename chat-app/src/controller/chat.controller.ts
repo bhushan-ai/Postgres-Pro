@@ -1,5 +1,8 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
+import { getIo } from "../socket/socket";
+
+const io = getIo();
 
 //send message
 export const sendMessage = async (c: Context) => {
@@ -83,6 +86,8 @@ export const sendMessage = async (c: Context) => {
       },
     });
 
+    io.emit("new-message", message);
+    
     return c.json({
       success: true,
       message: "message stored",
