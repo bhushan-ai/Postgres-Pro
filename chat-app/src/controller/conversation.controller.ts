@@ -109,7 +109,7 @@ export const getUserConversations = async (c: Context) => {
             user: true,
           },
         },
-        Messages: {
+        messages: {
           take: 1,
           orderBy: {
             createdAt: "desc",
@@ -179,7 +179,7 @@ export const getSingleConversation = async (c: Context) => {
             user: true,
           },
         },
-        Messages: {
+        messages: {
           orderBy: {
             createdAt: "desc",
           },
