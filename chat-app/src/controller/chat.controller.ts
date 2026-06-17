@@ -2,6 +2,50 @@ import { Context } from "hono";
 import { prisma } from "../lib/prisma";
 import { getIo, onlineUsers } from "../socket/socket";
 
+export const searchMessages = async (c: Context) => {
+  try {
+    const limit = 20;
+    const lastMsgId = c.req.query("cursor");
+    const conversationId = c.req.param("conversationId");
+
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId: conversationId,
+      },
+      take: limit,
+      ...(lastMsgId && {
+        cursor: {
+          id: lastMsgId,
+        },
+        skip: 1,
+      }),
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    messages.reverse();
+
+    return c.json({
+      success: true,
+      message: "messages Fetched",
+      data: messages,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while searching the message`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};
+
 //send message
 export const sendMessage = async (c: Context) => {
   try {
@@ -85,7 +129,7 @@ export const sendMessage = async (c: Context) => {
     });
 
     const io = getIo();
-    
+
     if (!io) {
       console.log("Socket.IO not initialized");
     }
