@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
-import { getIo, onlineUsers } from "../socket/socket";
+import { getIo } from "../socket/socket";
+import { redis } from "../server";
 
 export const searchMessages = async (c: Context) => {
   try {
@@ -132,8 +133,10 @@ export const sendMessage = async (c: Context) => {
 
     if (!io) {
       console.log("Socket.IO not initialized");
+      return;
     }
-    const receiverSocketId = onlineUsers.get(targetedUser.id);
+
+    const receiverSocketId = await redis.get(`online:${targetedUser.id}`);
 
     //receiver is online?
     if (receiverSocketId) {

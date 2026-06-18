@@ -123,9 +123,11 @@ export const login = async (c: Context): Promise<Response> => {
       );
     }
 
+
     const user = await prisma.user.findUnique({
       where: { email },
     });
+
 
     if (!user) {
       return c.json(
@@ -136,6 +138,7 @@ export const login = async (c: Context): Promise<Response> => {
         401,
       );
     }
+
 
     const checkPass = await bcrypt.compare(password, user.password);
 
