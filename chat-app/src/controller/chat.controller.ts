@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { prisma } from "../lib/prisma";
 import { getIo } from "../socket/socket";
 import { redis } from "../server";
+import { conversationQueue } from "../services/queue";
 
 export const searchMessages = async (c: Context) => {
   try {
@@ -113,28 +114,11 @@ export const sendMessage = async (c: Context) => {
       });
     }
 
-    const message = await prisma.message.create({
-      data: {
-        content: content,
-        conversationId: activeConversation.id,
-        senderId: sender.id,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
+    const job = await conversationQueue.add("new-message", {
+      content,
+      conversationId: activeConversation.id,
+      senderId: sender.id,
     });
-
-    await redis.rpush(
-      `conversation:${activeConversation.id}`,
-      JSON.stringify(message),
-    );
-
-    await redis.ltrim(`conversation:${activeConversation.id}`, -100, -1);
 
     const io = getIo();
 
@@ -142,14 +126,18 @@ export const sendMessage = async (c: Context) => {
       const receiverSocketId = await redis.get(`online:${targetedUser.id}`);
 
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("new-message", message);
+        io.to(receiverSocketId).emit("new-message", {
+          content,
+          conversationId: activeConversation.id,
+          senderId: sender.id,
+        });
       }
     }
 
     return c.json({
       success: true,
       message: "message stored",
-      data: message,
+      data: job.id,
     });
   } catch (error: unknown) {
     const err = error as Error;
