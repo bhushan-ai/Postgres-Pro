@@ -129,18 +129,21 @@ export const sendMessage = async (c: Context) => {
       },
     });
 
+    await redis.rpush(
+      `conversation:${activeConversation.id}`,
+      JSON.stringify(message),
+    );
+
+    await redis.ltrim(`conversation:${activeConversation.id}`, -100, -1);
+
     const io = getIo();
 
-    if (!io) {
-      console.log("Socket.IO not initialized");
-      return;
-    }
+    if (io) {
+      const receiverSocketId = await redis.get(`online:${targetedUser.id}`);
 
-    const receiverSocketId = await redis.get(`online:${targetedUser.id}`);
-
-    //receiver is online?
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("new-message", message);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("new-message", message);
+      }
     }
 
     return c.json({
