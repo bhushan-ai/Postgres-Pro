@@ -1,10 +1,12 @@
 import { Worker } from "bullmq";
 import { connection } from "./queue";
 import { prisma } from "../lib/prisma";
+console.log("Conversation worker started...");
 
 const conversationWorker = new Worker(
   "conversation",
   async (job) => {
+ //   console.log("Processing:", job.data);
     const { content, conversationId, senderId } = job.data;
 
     await prisma.message.create({

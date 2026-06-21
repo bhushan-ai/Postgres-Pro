@@ -3,6 +3,8 @@ import { prisma } from "../lib/prisma";
 import { getIo } from "../socket/socket";
 import { redis } from "../server";
 import { conversationQueue } from "../services/queue";
+import Redis from "ioredis";
+const publisher = new Redis(process.env.REDIS_URL!);
 
 export const searchMessages = async (c: Context) => {
   try {
@@ -70,6 +72,7 @@ export const sendMessage = async (c: Context) => {
     if (!targetedUser) {
       return c.json({ success: false, message: "receiver not found" }, 404);
     }
+
     if (!content?.trim()) {
       return c.json({ success: false, message: "content is required" }, 404);
     }
@@ -114,25 +117,28 @@ export const sendMessage = async (c: Context) => {
       });
     }
 
-    const job = await conversationQueue.add("new-message", {
-      content,
-      conversationId: activeConversation.id,
-      senderId: sender.id,
-    });
+    // Enqueue message so the worker can persist it asynchronously
+    const job = await conversationQueue.add(
+      "new-message",
+      {
+        content,
+        conversationId: activeConversation.id,
+        senderId: sender.id,
+      },
+      {
+        removeOnComplete: true,
+      },
+    );
 
-    const io = getIo();
-
-    if (io) {
-      const receiverSocketId = await redis.get(`online:${targetedUser.id}`);
-
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("new-message", {
-          content,
-          conversationId: activeConversation.id,
-          senderId: sender.id,
-        });
-      }
-    }
+    await publisher.publish(
+      "chat",
+      JSON.stringify({
+        senderId: sender.id,
+        content,
+        conversationId: activeConversation.id,
+        targetedUserId: targetedUser.id,
+      }),
+    );
 
     return c.json({
       success: true,
