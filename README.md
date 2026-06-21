@@ -46,7 +46,7 @@ This repo contains multiple mini-projects demonstrating:
 
 ## 🏗️ Tech Stack
 
-* **Backend:** Node.js, Express, TypeScript
+* **Backend:** Node.js, Express, Hono, Redis, AWS, TypeScript
 * **Database:** PostgreSQL
 * **ORM:** Prisma
 * **DevOps:** Docker
