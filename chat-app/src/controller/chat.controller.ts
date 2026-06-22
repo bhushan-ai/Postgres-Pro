@@ -1,11 +1,12 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
-import { getIo } from "../socket/socket";
-import { redis } from "../server";
 import { conversationQueue } from "../services/queue";
 import Redis from "ioredis";
+import { getIo } from "../socket/socket";
+import { Socket } from "socket.io";
 const publisher = new Redis(process.env.REDIS_URL!);
 
+//search messages
 export const searchMessages = async (c: Context) => {
   try {
     const limit = 20;
@@ -38,6 +39,108 @@ export const searchMessages = async (c: Context) => {
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while searching the message`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};
+
+//send message in group
+export const sendGroupMessage = async (c: Context) => {
+  try {
+    const conversationId = c.req.param("conversationId");
+    const { content } = await c.req.json();
+
+    const sender = c.get("user") as {
+      id: string;
+    };
+
+    if (!conversationId) {
+      return c.json(
+        {
+          success: false,
+          message: "Conversation id required",
+        },
+        400,
+      );
+    }
+
+    if (!content?.trim()) {
+      return c.json({ success: false, message: "content is required" }, 404);
+    }
+
+    const checkConversation = await prisma.conversation.findFirst({
+      where: {
+        isGroup: true,
+        id: conversationId,
+      },
+    });
+
+    if (!checkConversation) {
+      return c.json(
+        {
+          success: false,
+          message: "Conversation not exist",
+        },
+        404,
+      );
+    }
+
+    //check participants
+    const isMember = await prisma.participant.findFirst({
+      where: {
+        conversationId,
+        userId: sender.id,
+      },
+    });
+
+    if (!isMember) {
+      return c.json(
+        {
+          success: false,
+          message: "You are not a member of this group",
+        },
+        404,
+      );
+    }
+
+    // Enqueue message so the worker can persist it asynchronously
+    const job = await conversationQueue.add(
+      "new-message",
+      {
+        content,
+        conversationId: conversationId,
+        senderId: sender.id,
+      },
+      {
+        removeOnComplete: true,
+      },
+    );
+
+    const io = getIo();
+
+    if (io) {
+      io.to(`group:${conversationId}`).emit("new-message", {
+        content,
+        conversationId,
+        senderId: sender.id,
+      });
+    }
+
+    return c.json({
+      success: true,
+      message: "message sent",
+      data: job.id,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while sending message to group`, err);
 
     return c.json(
       {
@@ -130,6 +233,7 @@ export const sendMessage = async (c: Context) => {
       },
     );
 
+    // Publish chat event to Redis channel so subscribers can deliver it in real time
     await publisher.publish(
       "chat",
       JSON.stringify({
@@ -213,6 +317,7 @@ export const deleteMessage = async (c: Context) => {
         403,
       );
     }
+
     const deletedMessage = await prisma.message.delete({
       where: {
         id: messageId,
@@ -272,11 +377,6 @@ export const editMessage = async (c: Context) => {
       );
     }
 
-    // console.log("Prisma client loaded");
-    // console.dir((prisma as any)._runtimeDataModel, {
-    //   depth: null,
-    // });
-    // console.log(prisma.constructor.name);
     const message = await prisma.message.findFirst({
       where: {
         id: messageId,
@@ -309,7 +409,7 @@ export const editMessage = async (c: Context) => {
         id: messageId,
       },
       data: {
-        ...(content && { content }),
+        content,
         editedAt: new Date(),
       },
     });

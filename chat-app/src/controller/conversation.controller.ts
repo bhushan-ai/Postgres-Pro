@@ -219,3 +219,69 @@ export const getSingleConversation = async (c: Context) => {
     );
   }
 };
+
+export const createGroupConversation = async (c: Context) => {
+  try {
+    const { name, members } = await c.req.json();
+
+    const user = c.get("user") as {
+      id: string;
+    };
+
+    if (!name?.trim()) {
+      return c.json({ success: false, message: "name is required" }, 404);
+    }
+
+    if (!members || members.length < 2) {
+      return c.json(
+        {
+          success: false,
+          message: "At least 2 members are required to create a group",
+        },
+        404,
+      );
+    }
+
+    const group = await prisma.conversation.create({
+      data: {
+        name,
+        isGroup: true,
+        participants: {
+          create: [
+            {
+              userId: user.id,
+            },
+            ...members.map((memberId: string) => ({ userId: memberId })),
+          ],
+        },
+      },
+      include: {
+        participants: true,
+      },
+    });
+
+    return c.json(
+      {
+        success: true,
+        message: "Group  Created",
+        data: group,
+      },
+      201,
+    );
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(
+      `Something went wrong while creating a group conversation`,
+      err,
+    );
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};

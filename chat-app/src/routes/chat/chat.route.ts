@@ -11,6 +11,7 @@ import {
 const chatRouter = new Hono();
 
 chatRouter.post("/send", jwtAuth, sendMessage);
+chatRouter.post("/send-msg-group/:conversationId", jwtAuth, sendMessage);
 chatRouter.delete(
   "/delete-msg/:conversationId/:messageId",
   jwtAuth,
