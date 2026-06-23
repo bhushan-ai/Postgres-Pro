@@ -3,8 +3,38 @@ import { prisma } from "../lib/prisma";
 import { conversationQueue } from "../services/queue";
 import Redis from "ioredis";
 import { getIo } from "../socket/socket";
-import { Socket } from "socket.io";
+import { tryCatch } from "bullmq";
+
 const publisher = new Redis(process.env.REDIS_URL!);
+
+//upload File
+export const upload = async (c: Context) => {
+  try {
+    const body = await c.req.parseBody();
+    const file = body["file"];
+
+    if (!(file instanceof File)) {
+      return c.text("File is required", 400);
+    }
+
+    
+
+
+
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.log(`Something went wrong while uploading the file`, err);
+
+    return c.json(
+      {
+        success: false,
+        message: "Server side error",
+        error: err,
+      },
+      500,
+    );
+  }
+};
 
 //search messages
 export const searchMessages = async (c: Context) => {
