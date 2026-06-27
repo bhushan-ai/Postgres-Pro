@@ -20,6 +20,8 @@ model User {
 model Message {
   id             String       @id @default(uuid())
   content        String
+  fileUrl        String?
+  fileType       String?
   senderId       String
   conversationId String
   createdAt      DateTime     @default(now())

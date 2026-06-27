@@ -3,7 +3,9 @@ import { prisma } from "../lib/prisma";
 import { conversationQueue } from "../services/queue";
 import Redis from "ioredis";
 import { getIo } from "../socket/socket";
-import { tryCatch } from "bullmq";
+import { s3Client } from "../services/aws/s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const publisher = new Redis(process.env.REDIS_URL!);
 
@@ -17,10 +19,35 @@ export const upload = async (c: Context) => {
       return c.text("File is required", 400);
     }
 
-    
+    const key = `${Date.now()}-${file.name}`;
 
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME!,
+        Key: key,
+        Body: file,
+        ContentType: file.type,
+      }),
+    );
 
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: key,
+    });
 
+    const url = await getSignedUrl(s3Client, command, {
+      expiresIn: 3600,
+    });
+
+    return c.json(
+      {
+        success: true,
+        message: "File Uploaded",
+        url: url,
+        fileName: file.name,
+      },
+      200,
+    );
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while uploading the file`, err);
@@ -85,7 +112,7 @@ export const searchMessages = async (c: Context) => {
 export const sendGroupMessage = async (c: Context) => {
   try {
     const conversationId = c.req.param("conversationId");
-    const { content } = await c.req.json();
+    const { content, fileUrl, fileName } = await c.req.json();
 
     const sender = c.get("user") as {
       id: string;
@@ -160,6 +187,8 @@ export const sendGroupMessage = async (c: Context) => {
         content,
         conversationId,
         senderId: sender.id,
+        fileUrl: fileUrl,
+        fileName: fileName,
       });
     }
 
@@ -186,7 +215,7 @@ export const sendGroupMessage = async (c: Context) => {
 //send message
 export const sendMessage = async (c: Context) => {
   try {
-    const { content, targetedUserId } = await c.req.json();
+    const { content, targetedUserId, fileName, fileUrl } = await c.req.json();
 
     const sender = c.get("user") as {
       id: string;
@@ -257,6 +286,8 @@ export const sendMessage = async (c: Context) => {
         content,
         conversationId: activeConversation.id,
         senderId: sender.id,
+        fileName: fileName,
+        fileUrl: fileUrl,
       },
       {
         removeOnComplete: true,

@@ -6,14 +6,16 @@ console.log("Conversation worker started...");
 const conversationWorker = new Worker(
   "conversation",
   async (job) => {
- //   console.log("Processing:", job.data);
-    const { content, conversationId, senderId } = job.data;
+    //   console.log("Processing:", job.data);
+    const { content, conversationId, senderId, fileUrl, fileType } = job.data;
 
     await prisma.message.create({
       data: {
         content,
         conversationId,
         senderId,
+        fileUrl,
+        fileType,
       },
     });
     console.log("Message saved:", job.id);
