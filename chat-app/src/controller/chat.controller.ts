@@ -19,13 +19,15 @@ export const upload = async (c: Context) => {
       return c.text("File is required", 400);
     }
 
+    const buffer = Buffer.from(await file.arrayBuffer());
+
     const key = `${Date.now()}-${file.name}`;
 
     await s3Client.send(
       new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME!,
         Key: key,
-        Body: file,
+        Body: buffer,
         ContentType: file.type,
       }),
     );
@@ -45,6 +47,7 @@ export const upload = async (c: Context) => {
         message: "File Uploaded",
         url: url,
         fileName: file.name,
+        fileType: file.type,
       },
       200,
     );
@@ -215,7 +218,7 @@ export const sendGroupMessage = async (c: Context) => {
 //send message
 export const sendMessage = async (c: Context) => {
   try {
-    const { content, targetedUserId, fileName, fileUrl } = await c.req.json();
+    const { content, targetedUserId, fileType, fileUrl } = await c.req.json();
 
     const sender = c.get("user") as {
       id: string;
@@ -286,13 +289,15 @@ export const sendMessage = async (c: Context) => {
         content,
         conversationId: activeConversation.id,
         senderId: sender.id,
-        fileName: fileName,
+        fileType: fileType,
         fileUrl: fileUrl,
       },
       {
         removeOnComplete: true,
       },
     );
+
+    console.log("Job added:", job.id);
 
     // Publish chat event to Redis channel so subscribers can deliver it in real time
     await publisher.publish(
@@ -493,3 +498,26 @@ export const editMessage = async (c: Context) => {
     );
   }
 };
+
+// export const deleteAllMessage = async (c: Context) => {
+//   try {
+//     await prisma.message.deleteMany({});
+
+//     return c.json({
+//       success: true,
+//       message: "all message deleted",
+//     });
+//   } catch (error: unknown) {
+//     const err = error as Error;
+//     console.log(`Something went wrong while deleting the message`, err);
+
+//     return c.json(
+//       {
+//         success: false,
+//         message: "Server side error",
+//         error: err,
+//       },
+//       500,
+//     );
+//   }
+// };
