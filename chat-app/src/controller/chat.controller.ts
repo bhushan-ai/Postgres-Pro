@@ -7,34 +7,86 @@ import { s3Client } from "../services/aws/s3";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+
 const publisher = new Redis(process.env.REDIS_URL!);
 
-//upload File
-export const upload = async (c: Context) => {
+//upload File old feature 
+// export const upload = async (c: Context) => {
+//   try {
+//     const body = await c.req.parseBody();
+//     const file = body["file"];
+
+//     if (!(file instanceof File)) {
+//       return c.text("File is required", 400);
+//     }
+
+//     const buffer = Buffer.from(await file.arrayBuffer());
+
+//     const key = `${Date.now()}-${file.name}`;
+
+//     await s3Client.send(
+//       new PutObjectCommand({
+//         Bucket: process.env.AWS_BUCKET_NAME!,
+//         Key: key,
+//         Body: buffer,
+//         ContentType: file.type,
+//       }),
+//     );
+
+//     const command = new GetObjectCommand({
+//       Bucket: process.env.AWS_BUCKET_NAME!,
+//       Key: key,
+//     });
+
+//     const url = await getSignedUrl(s3Client, command, {
+//       expiresIn: 3600,
+//     });
+
+//     return c.json(
+//       {
+//         success: true,
+//         message: "File Uploaded",
+//         url: url,
+//         fileName: file.name,
+//         fileType: file.type,
+//       },
+//       200,
+//     );
+//   } catch (error: unknown) {
+//     const err = error as Error;
+//     console.log(`Something went wrong while uploading the file`, err);
+
+//     return c.json(
+//       {
+//         success: false,
+//         message: "Server side error",
+//         error: err,
+//       },
+//       500,
+//     );
+//   }
+// };
+
+//get url
+export const getUrl = async (c: Context) => {
   try {
-    const body = await c.req.parseBody();
-    const file = body["file"];
+    const { fileName, contentType } = await c.req.json();
 
-    if (!(file instanceof File)) {
-      return c.text("File is required", 400);
+    if (!fileName || !contentType) {
+      return c.json(
+        {
+          success: false,
+          message: "fileName and contentType are required",
+        },
+        400,
+      );
     }
+    const key = `uploads/${Date.now()}-${fileName}`;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    const key = `${Date.now()}-${file.name}`;
-
-    await s3Client.send(
-      new PutObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME!,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
-      }),
-    );
-
-    const command = new GetObjectCommand({
+    const command = new PutObjectCommand({
       Bucket: process.env.AWS_BUCKET_NAME!,
       Key: key,
+      ContentType: contentType,
     });
 
     const url = await getSignedUrl(s3Client, command, {
@@ -44,13 +96,13 @@ export const upload = async (c: Context) => {
     return c.json(
       {
         success: true,
-        message: "File Uploaded",
-        url: url,
-        fileName: file.name,
-        fileType: file.type,
+        message: "Pre-signed upload URL generated",
+        uploadUrl: url,
+        key,
       },
       200,
     );
+
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while uploading the file`, err);
@@ -115,7 +167,7 @@ export const searchMessages = async (c: Context) => {
 export const sendGroupMessage = async (c: Context) => {
   try {
     const conversationId = c.req.param("conversationId");
-    const { content, fileUrl, fileName } = await c.req.json();
+    const { content, fileUrl, fileType } = await c.req.json();
 
     const sender = c.get("user") as {
       id: string;
@@ -130,9 +182,14 @@ export const sendGroupMessage = async (c: Context) => {
         400,
       );
     }
-
-    if (!content?.trim()) {
-      return c.json({ success: false, message: "content is required" }, 404);
+    if (!content?.trim() && !fileUrl) {
+      return c.json(
+        {
+          success: false,
+          message: "Message content or file is required",
+        },
+        400,
+      );
     }
 
     const checkConversation = await prisma.conversation.findFirst({
@@ -177,6 +234,8 @@ export const sendGroupMessage = async (c: Context) => {
         content,
         conversationId: conversationId,
         senderId: sender.id,
+        fileUrl: fileUrl,
+        fileType: fileType,
       },
       {
         removeOnComplete: true,
@@ -190,8 +249,8 @@ export const sendGroupMessage = async (c: Context) => {
         content,
         conversationId,
         senderId: sender.id,
-        fileUrl: fileUrl,
-        fileName: fileName,
+        fileUrl,
+        fileType,
       });
     }
 
