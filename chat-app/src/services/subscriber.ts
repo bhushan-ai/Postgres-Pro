@@ -21,7 +21,6 @@ subscriber.on("message", async (channel, message) => {
   const io = getIo();
 
   const socketId = await redis.get(`online:${data.targetedUserId}`);
-
   if (socketId) {
     io.to(socketId).emit("new-message", data);
   }
