@@ -6,3 +6,4 @@ export const connection = {
 };
 
 export const conversationQueue = new Queue("conversation", { connection });
+export const notificationQueue = new Queue("notification", { connection });

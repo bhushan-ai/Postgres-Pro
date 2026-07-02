@@ -1,16 +1,15 @@
 import { Context } from "hono";
 import { prisma } from "../lib/prisma";
-import { conversationQueue } from "../services/queue";
+import { conversationQueue, notificationQueue } from "../services/queue";
 import Redis from "ioredis";
 import { getIo } from "../socket/socket";
 import { s3Client } from "../services/aws/s3";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-
 const publisher = new Redis(process.env.REDIS_URL!);
 
-//upload File old feature 
+//upload File old feature
 // export const upload = async (c: Context) => {
 //   try {
 //     const body = await c.req.parseBody();
@@ -102,7 +101,6 @@ export const getUrl = async (c: Context) => {
       },
       200,
     );
-
   } catch (error: unknown) {
     const err = error as Error;
     console.log(`Something went wrong while uploading the file`, err);
@@ -356,7 +354,12 @@ export const sendMessage = async (c: Context) => {
       },
     );
 
-    console.log("Job added:", job.id);
+    // console.log("Job added:", job.id);
+
+    await notificationQueue.add("send-notification", {
+      receiverId: targetedUser.id,
+      message: content,
+    });
 
     // Publish chat event to Redis channel so subscribers can deliver it in real time
     await publisher.publish(
