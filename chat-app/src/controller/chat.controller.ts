@@ -356,6 +356,7 @@ export const sendMessage = async (c: Context) => {
 
     // console.log("Job added:", job.id);
 
+    // Send notification to the targeted user
     await notificationQueue.add("send-notification", {
       receiverId: targetedUser.id,
       message: content,
