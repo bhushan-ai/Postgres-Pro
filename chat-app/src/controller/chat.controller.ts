@@ -240,6 +240,11 @@ export const sendGroupMessage = async (c: Context) => {
       },
     );
 
+    await notificationQueue.add("send-notification", {
+      receiverId: conversationId,
+      message: content,
+    });
+
     const io = getIo();
 
     if (io) {
